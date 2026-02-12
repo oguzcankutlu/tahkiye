@@ -2,7 +2,7 @@
 const nextConfig = {
     reactStrictMode: true,
     experimental: {
-        serverActions: true,
+        serverActions: true, // Enable Server Actions for Next.js 13.5.6
     },
 }
 
