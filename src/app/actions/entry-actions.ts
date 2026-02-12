@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function getLatestEntries() {
     const supabase = await createClient()
-
+    if (!supabase) return []
     const { data, error } = await supabase
         .from('entries')
         .select(`

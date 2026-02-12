@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function getCategories() {
     const supabase = await createClient()
+    if (!supabase) return []
     const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -19,6 +20,7 @@ export async function getCategories() {
 
 export async function getTopics(categoryId?: number) {
     const supabase = await createClient()
+    if (!supabase) return []
     let query = supabase
         .from('topics')
         .select(`

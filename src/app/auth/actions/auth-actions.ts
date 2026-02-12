@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function login(prevState: any, formData: FormData) {
     const supabase = await createClient()
+    if (!supabase) return { error: 'Veritabanı yapılandırılmamış. Vercel ortam değişkenlerini kontrol edin.' }
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
@@ -25,7 +26,7 @@ export async function login(prevState: any, formData: FormData) {
 
 export async function signup(prevState: any, formData: FormData) {
     const supabase = await createClient()
-
+    if (!supabase) return { error: 'Veritabanı yapılandırılmamış. Vercel ortam değişkenlerini kontrol edin.' }
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const username = formData.get('username') as string
@@ -59,7 +60,7 @@ export async function signup(prevState: any, formData: FormData) {
 
 export async function logout() {
     const supabase = await createClient()
-    await supabase.auth.signOut()
+    if (supabase) await supabase.auth.signOut()
     revalidatePath('/', 'layout')
     redirect('/login')
 }

@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    turbopack: {
+        root: __dirname,
+    },
 }
 
-// Deployed to Vercel
 module.exports = nextConfig
