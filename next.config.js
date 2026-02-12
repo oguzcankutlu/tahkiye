@@ -3,4 +3,5 @@ const nextConfig = {
     reactStrictMode: true,
 }
 
+// Deployed to Vercel
 module.exports = nextConfig
