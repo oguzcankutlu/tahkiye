@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 
 export async function getLatestEntries() {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
         .from('entries')
