@@ -1,0 +1,43 @@
+'use server'
+
+import { createClient } from '@/utils/supabase/server'
+
+export async function getCategories() {
+    const supabase = createClient()
+    const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('order', { ascending: true })
+
+    if (error) {
+        console.error('Error fetching categories:', error)
+        return []
+    }
+
+    return data
+}
+
+export async function getTopics(categoryId?: number) {
+    const supabase = createClient()
+    let query = supabase
+        .from('topics')
+        .select(`
+      *,
+      entries (count)
+    `)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+    if (categoryId) {
+        query = query.eq('category_id', categoryId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+        console.error('Error fetching topics:', error)
+        return []
+    }
+
+    return data
+}

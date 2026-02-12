@@ -1,0 +1,65 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+
+import { createClient } from '@/utils/supabase/server'
+
+export async function login(prevState: any, formData: FormData) {
+    const supabase = createClient()
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/')
+}
+
+export async function signup(prevState: any, formData: FormData) {
+    const supabase = createClient()
+
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+    const username = formData.get('username') as string
+    const phone = formData.get('phone') as string
+    const city = formData.get('city') as string
+
+    // Simple validation
+    if (!email || !password || !username) {
+        return { error: 'Gerekli alanları doldurunuz.' }
+    }
+
+    const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                username,
+                phone,
+                city,
+            },
+        },
+    })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/')
+}
+
+export async function logout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    revalidatePath('/', 'layout')
+    redirect('/login')
+}
