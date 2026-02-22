@@ -104,7 +104,7 @@ export function UserMenu() {
                             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hover:bg-secondary/60 transition-colors"
                         >
                             <span className="h-4 w-4 text-muted-foreground text-base leading-none font-bold">✍</span>
-                            Yeni Makale
+                            Yeni Konu
                         </Link>
                         <Link
                             href="/ayarlar"
