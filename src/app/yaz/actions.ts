@@ -100,15 +100,18 @@ export async function submitArticle(prevState: any, formData: FormData) {
     const read_time = Math.max(1, Math.ceil(wordCount / 200))
 
     // 5. Supabase'e Girdiyi Ekle
+    const linksArray = JSON.parse(related_links)
+
     const { data: newArticle, error } = await supabase
         .from('articles')
         .insert({
             author_id: profile.id,
             topic_id,
-            title: new_topic_title || "", // Use new title if provided, or empty for entries (topic title is the source of truth)
+            title: new_topic_title || "", // Use new title if provided, or empty for entries
             content,
             read_time,
-            related_links,
+            related_links: linksArray,
+            related_videos: videosArray,
             video_url: firstVideoUrl,
         })
         .select('id')
@@ -166,14 +169,15 @@ export async function updateArticle(prevState: any, formData: FormData) {
     if (!article || article.author_id !== user.id) return { error: 'Bu girdi üzerinde düzenleme yetkiniz yok.' }
 
     const videosArray = JSON.parse(related_videos)
+    const linksArray = JSON.parse(related_links)
     const firstVideoUrl = videosArray[0]?.url || ""
 
     const { error } = await supabase
         .from('articles')
         .update({
             content,
-            related_links,
-            related_videos,
+            related_links: linksArray,
+            related_videos: videosArray,
             video_url: firstVideoUrl
         })
         .eq('id', id)
