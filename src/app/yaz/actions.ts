@@ -46,6 +46,12 @@ export async function submitArticle(prevState: any, formData: FormData) {
     const related_videos = formData.get('related_videos') as string || '[]'
     const related_links = formData.get('related_links') as string || '[]'
 
+    // IA Fields
+    const type = formData.get('type') as string || 'general'
+    const era = formData.get('era') as string
+    const era_year_str = formData.get('era_year') as string
+    const era_year = era_year_str ? parseInt(era_year_str) : null
+
     // Validation
     if ((!topic_id && !new_topic_title) || !content) {
         return { error: 'Lütfen konu başlığını ve girdi metnini doldurun.' }
@@ -73,7 +79,10 @@ export async function submitArticle(prevState: any, formData: FormData) {
                 .insert({
                     title: new_topic_title,
                     slug: slug,
-                    category_id: category_id || null
+                    category_id: category_id || null,
+                    type: type,
+                    era: era || null,
+                    era_year: era_year
                 })
                 .select('id')
                 .single()

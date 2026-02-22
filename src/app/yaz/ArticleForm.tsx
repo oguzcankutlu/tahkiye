@@ -71,34 +71,81 @@ export function ArticleForm({
                     <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-4">
                         <p className="text-xs font-bold text-primary uppercase tracking-widest">Yeni Konu Açıyorsun</p>
 
-                        <div>
-                            <label htmlFor="new_topic_title" className="block text-sm font-medium text-muted-foreground mb-1.5">
-                                Konu Başlığı *
-                            </label>
-                            <input
-                                id="new_topic_title"
-                                name="new_topic_title"
-                                className="w-full flex h-12 rounded-md border border-input bg-background/50 px-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                placeholder="Örn: Antigravity teorisi"
-                                required
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="new_topic_title" className="block text-sm font-medium text-muted-foreground mb-1.5">
+                                    Konu Başlığı *
+                                </label>
+                                <input
+                                    id="new_topic_title"
+                                    name="new_topic_title"
+                                    className="w-full flex h-12 rounded-md border border-input bg-background/50 px-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Örn: Antigravity teorisi"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="category_id" className="block text-sm font-medium text-muted-foreground mb-1.5">
+                                    Kategori
+                                </label>
+                                <select
+                                    id="category_id"
+                                    name="category_id"
+                                    defaultValue=""
+                                    className="w-full flex h-12 rounded-md border border-input bg-background/50 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                    <option value="">Kategori Seçin (İsteğe Bağlı)</option>
+                                    {categories.map(c => (
+                                        <option key={c.id} value={c.id}>{c.title}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
-                        <div>
-                            <label htmlFor="category_id" className="block text-sm font-medium text-muted-foreground mb-1.5">
-                                Kategori
-                            </label>
-                            <select
-                                id="category_id"
-                                name="category_id"
-                                defaultValue=""
-                                className="w-full flex h-11 rounded-md border border-input bg-background/50 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            >
-                                <option value="">Kategori Seçin (İsteğe Bağlı)</option>
-                                {categories.map(c => (
-                                    <option key={c.id} value={c.id}>{c.title}</option>
-                                ))}
-                            </select>
+                        {/* YENİ: Tür ve Tarihsellik Alanları */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-primary/10 pt-4">
+                            <div>
+                                <label htmlFor="type" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
+                                    Tür (Opsiyonel)
+                                </label>
+                                <select
+                                    id="type"
+                                    name="type"
+                                    defaultValue="general"
+                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                    <option value="general">Genel</option>
+                                    <option value="person">Kişi</option>
+                                    <option value="work">Eser</option>
+                                    <option value="concept">Kavram</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="era" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
+                                    Tarih / Dönem
+                                </label>
+                                <input
+                                    id="era"
+                                    name="era"
+                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Örn: 1957, M.Ö. 400"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="era_year" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
+                                    Yıl (Sıralama için)
+                                </label>
+                                <input
+                                    id="era_year"
+                                    name="era_year"
+                                    type="number"
+                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Örn: 1957, -400"
+                                />
+                            </div>
                         </div>
                     </div>
                 </>

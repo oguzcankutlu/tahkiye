@@ -17,13 +17,16 @@ interface Girdi {
     author: { username: string; full_name: string | null } | { username: string; full_name: string | null }[] | null
 }
 
+import { Share2, Copy, MessageCircle, Facebook, Send } from "lucide-react"
+import { voteArticle } from "@/app/actions/entry-actions"
+
 export function GirdiItem({
     girdi,
     currentUserId,
     index,
     totalCount
 }: {
-    girdi: Girdi
+    girdi: any // Girdi interface update below
     currentUserId?: string
     index: number
     totalCount: number
@@ -32,6 +35,8 @@ export function GirdiItem({
     const [content, setContent] = useState(girdi.content)
     const [error, setError] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
+    const [showShare, setShowShare] = useState(false)
+    const [isVoting, setIsVoting] = useState(false)
 
     // Parse initial links/videos
     const initialLinks = typeof girdi.related_links === 'string' ? JSON.parse(girdi.related_links || '[]') : (girdi.related_links || [])
@@ -63,11 +68,8 @@ export function GirdiItem({
         e.preventDefault()
         setError(null)
         const formData = new FormData(e.currentTarget)
-
-        // Filter out empty links/videos before sending
         const validLinks = links.filter(l => l.url.trim())
         const validVideos = videos.filter(v => v.url.trim())
-
         formData.set('related_links', JSON.stringify(validLinks))
         formData.set('related_videos', JSON.stringify(validVideos))
 
@@ -80,6 +82,28 @@ export function GirdiItem({
             }
         })
     }
+
+    const handleVote = async (type: 'up' | 'down') => {
+        if (!currentUserId) {
+            alert("Oy vermek için giriş yapmalısınız.")
+            return
+        }
+        setIsVoting(true)
+        const res = await voteArticle(girdi.id, type)
+        if (res.error) alert(res.error)
+        setIsVoting(false)
+    }
+
+    const shareLink = typeof window !== 'undefined' ? `${window.location.origin}/article/${girdi.id}` : ""
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(shareLink)
+        alert("Link kopyalandı!")
+        setShowShare(false)
+    }
+
+    const upvotes = girdi.upvotes || 0
+    const downvotes = girdi.downvotes || 0
 
     return (
         <article className="relative pl-6 sm:pl-10 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary/20 hover:before:bg-primary transition-all">
@@ -98,7 +122,6 @@ export function GirdiItem({
                         />
                     </div>
 
-                    {/* Related Links Edit */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <label className="text-[10px] font-bold text-muted-foreground uppercase">İlgili Bağlantılar</label>
@@ -115,7 +138,6 @@ export function GirdiItem({
                         ))}
                     </div>
 
-                    {/* Related Videos Edit */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <label className="text-[10px] font-bold text-muted-foreground uppercase">Video Bağlantıları</label>
@@ -149,7 +171,6 @@ export function GirdiItem({
                         {content}
                     </div>
 
-                    {/* Render Links and Videos if exist */}
                     {links.length > 0 && links.some(l => l.url) && (
                         <div className="mt-4 p-3 bg-secondary/20 rounded-lg border border-border/40">
                             <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-2">İlgili Bağlantılar</label>
@@ -165,29 +186,85 @@ export function GirdiItem({
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-border/10">
-                <div className="flex items-center gap-2">
-                    <Link href={`/profile/${authorUsername}`} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
-                        {initialLetter}
-                    </Link>
-                    <Link href={`/profile/${authorUsername}`} className="text-xs font-bold text-primary hover:underline">{authorName}</Link>
-                    <span className="text-muted-foreground/30 text-xs">•</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-tighter font-semibold">{formattedDate}</span>
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-border/10">
+                <div className="flex items-center gap-4">
+                    {/* Voting */}
+                    <div className="flex items-center gap-4 bg-secondary/10 px-3 py-1.5 rounded-full border border-border/30">
+                        <button
+                            onClick={() => handleVote('up')}
+                            disabled={isVoting}
+                            className="flex items-center gap-1.5 group"
+                        >
+                            <span className="text-base group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👏</span>
+                            <span className="text-xs font-bold text-muted-foreground group-hover:text-primary tabular-nums">{upvotes}</span>
+                        </button>
+                        <div className="w-px h-3 bg-border/40" />
+                        <button
+                            onClick={() => handleVote('down')}
+                            disabled={isVoting}
+                            className="flex items-center gap-1.5 group"
+                        >
+                            <span className="text-base group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
+                            <span className="text-xs font-bold text-muted-foreground group-hover:text-destructive tabular-nums">{downvotes}</span>
+                        </button>
+                    </div>
 
-                    {isOwner && !isEditing && (
-                        <>
-                            <span className="text-muted-foreground/30 text-xs">•</span>
+                    <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight">
+                        <span>{formattedDate}</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {/* Share Button with Popover */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowShare(!showShare)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-secondary/50 hover:bg-secondary text-foreground transition-all border border-border/40"
+                        >
+                            <Share2 className="h-3.5 w-3.5" /> Paylaş
+                        </button>
+
+                        {showShare && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowShare(false)} />
+                                <div className="absolute bottom-full right-0 mb-2 w-48 bg-card border border-border/80 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="grid grid-cols-1 gap-1">
+                                        <a href={`https://wa.me/?text=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                            <MessageCircle className="h-4 w-4 text-green-500" /> WhatsApp
+                                        </a>
+                                        <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                            <Facebook className="h-4 w-4 text-blue-600" /> Facebook
+                                        </a>
+                                        <a href={`https://t.me/share/url?url=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                            <Send className="h-4 w-4 text-sky-500" /> Telegram
+                                        </a>
+                                        <button onClick={copyToClipboard} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors border-t border-border/40 mt-1">
+                                            <Copy className="h-4 w-4 text-muted-foreground" /> Linki Kopyala
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Ownership / Edit / Profile */}
+                    <div className="flex items-center gap-2 pl-2 border-l border-border/20">
+                        {isOwner ? (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
                             >
-                                <Pencil className="h-2.5 w-2.5" /> Düzenle
+                                <Pencil className="h-3.5 w-3.5" /> Düzenle
                             </button>
-                        </>
-                    )}
-                </div>
-                <div className="flex items-center gap-3">
-                    <Link href={`/article/${girdi.id}`} className="text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors">#{(totalCount - index).toString().padStart(2, '0')}</Link>
+                        ) : (
+                            <Link href={`/profile/${authorUsername}`} className="flex items-center gap-2 group">
+                                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border group-hover:border-primary transition-colors">
+                                    {initialLetter}
+                                </div>
+                                <span className="text-xs font-bold text-foreground/70 group-hover:text-primary transition-colors">{authorName}</span>
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </div>
         </article>
