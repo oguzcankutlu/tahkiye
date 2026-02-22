@@ -1,11 +1,8 @@
 "use client"
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react"
-import ReactPlayer from "react-player"
 // @ts-ignore
 import { X, Loader2 } from "lucide-react"
-
-const Player = ReactPlayer as any;
 
 interface VideoContextType {
     playVideo: (url: string, title?: string) => void
@@ -23,6 +20,19 @@ export function useVideo() {
         throw new Error("useVideo must be used within a VideoProvider")
     }
     return context
+}
+
+// Helpers to extract IDs
+function getYouTubeId(url: string) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/
+    const match = url.match(regExp)
+    return (match && match[2].length === 11) ? match[2] : null
+}
+
+function getVimeoId(url: string) {
+    const regExp = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i
+    const match = url.match(regExp)
+    return match ? match[1] : null
 }
 
 export function VideoProvider({ children }: { children: ReactNode }) {
@@ -50,7 +60,7 @@ export function VideoProvider({ children }: { children: ReactNode }) {
     }, [isOpen])
 
     const playVideo = (url: string, title?: string) => {
-        setCurrentVideoUrl(url)
+        setCurrentVideoUrl(url ? url.trim() : null)
         setCurrentVideoTitle(title || "Video Oynatıcı")
         setIsOpen(true)
     }
@@ -63,6 +73,9 @@ export function VideoProvider({ children }: { children: ReactNode }) {
             setCurrentVideoTitle(null)
         }, 300)
     }
+
+    const ytId = currentVideoUrl ? getYouTubeId(currentVideoUrl) : null
+    const vimeoId = currentVideoUrl && !ytId ? getVimeoId(currentVideoUrl) : null
 
     return (
         <VideoContext.Provider value={{ playVideo, closeVideo, isOpen, currentVideoUrl, currentVideoTitle }}>
@@ -93,16 +106,29 @@ export function VideoProvider({ children }: { children: ReactNode }) {
                         {/* Video Container - 16:9 Aspect Ratio */}
                         <div className="relative w-full pb-[56.25%] bg-black">
                             <div className="absolute inset-0 flex items-center justify-center">
-                                {currentVideoUrl && (
-                                    <Player
-                                        url={currentVideoUrl}
-                                        width="100%"
-                                        height="100%"
-                                        controls
-                                        playing={isOpen}
-                                        className="absolute top-0 left-0"
-                                        fallback={<div className="text-white animate-pulse">Yükleniyor...</div>}
+                                {ytId ? (
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                                        className="w-full h-full absolute top-0 left-0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
                                     />
+                                ) : vimeoId ? (
+                                    <iframe
+                                        src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1`}
+                                        className="w-full h-full absolute top-0 left-0"
+                                        allow="autoplay; fullscreen; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                ) : currentVideoUrl ? (
+                                    <div className="text-white text-sm text-center px-4 flex flex-col items-center gap-2">
+                                        <p>Desteklenmeyen video formatı.</p>
+                                        <a href={currentVideoUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                            Videoyu yeni sekmede açmak için tıklayın
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
                                 )}
                             </div>
                         </div>
