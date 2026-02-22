@@ -11,8 +11,9 @@ export default async function AdminPage() {
         return <AdminLoginGate />
     }
 
-    const [topicsRes, videosRes, articlesRes, profilesRes, adsRes] = await Promise.all([
-        supabase.from('topics').select('id, title, slug, description, created_at').order('created_at', { ascending: false }),
+    const [categoriesRes, topicsRes, videosRes, articlesRes, profilesRes, adsRes] = await Promise.all([
+        supabase.from('categories').select('*').order('created_at', { ascending: false }),
+        supabase.from('topics').select('id, title, slug, description, category_id, created_at').order('created_at', { ascending: false }),
         supabase.from('videos').select('id, title, video_url, duration, created_at').order('created_at', { ascending: false }),
         supabase.from('articles').select('id, title, created_at, author_id, topic_id').order('created_at', { ascending: false }),
         supabase.from('profiles').select('id, username, full_name, avatar_url, created_at').order('created_at', { ascending: false }),
@@ -21,6 +22,7 @@ export default async function AdminPage() {
 
     return (
         <AdminDashboardClient
+            categories={categoriesRes.data || []}
             topics={topicsRes.data || []}
             videos={videosRes.data || []}
             articles={articlesRes.data || []}

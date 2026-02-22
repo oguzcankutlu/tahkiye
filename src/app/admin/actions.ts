@@ -10,11 +10,49 @@ export async function createTopic(formData: FormData) {
 
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
+    const category_id = formData.get('category_id') as string // Yeni: kategori bağı
     const description = formData.get('description') as string
 
     if (!title || !slug) return { error: 'Başlık ve Slug zorunludur.' }
 
-    const { error } = await supabase.from('topics').insert({ title, slug, description })
+    const { error } = await supabase.from('topics').insert({
+        title,
+        slug,
+        category_id: category_id || null,
+        description
+    })
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+}
+
+export async function createCategory(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const title = formData.get('title') as string
+    const slug = formData.get('slug') as string
+
+    if (!title || !slug) return { error: 'Başlık ve Slug zorunludur.' }
+
+    const { error } = await supabase.from('categories').insert({ title, slug })
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+}
+
+export async function deleteCategory(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const id = formData.get('id') as string
+    const { error } = await supabase.from('categories').delete().eq('id', id)
     if (error) return { error: error.message }
 
     revalidatePath('/admin')

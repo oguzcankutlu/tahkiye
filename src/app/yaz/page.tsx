@@ -9,13 +9,14 @@ export default async function YazPage({ searchParams }: { searchParams: Promise<
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) redirect('/login')
 
-    const { data: topics } = await supabase
-        .from('topics')
+    // 2. Fetch accessible categories for the dropdown
+    const { data: categories } = await supabase
+        .from('categories')
         .select('id, title')
         .order('title', { ascending: true })
 
-    const { data: videos } = await supabase
-        .from('videos')
+    const { data: topics } = await supabase
+        .from('topics')
         .select('id, title')
         .order('title', { ascending: true })
 
@@ -23,15 +24,19 @@ export default async function YazPage({ searchParams }: { searchParams: Promise<
         <div className="w-full pb-20">
             <div className="mb-8 border-b border-border/40 pb-6">
                 <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                    Yeni Girdi Yaz
+                    Yeni Konu Aç
                 </h1>
                 <p className="mt-2 text-muted-foreground text-sm max-w-2xl">
-                    Düşüncelerinizi paylaşın. Sistem yazınızı analiz edip, otomatik olarak okuma süresi atayacaktır.
+                    Yeni bir başlık açın veya mevcut bir konuya girdi girin. Videolarınız otomatik olarak video sayfamıza da eklenecektir.
                 </p>
             </div>
 
             <div className="max-w-4xl mx-auto">
-                <ArticleForm topics={topics || []} videos={videos || []} preselectedTopicId={params.topic_id} />
+                <ArticleForm
+                    topics={topics || []}
+                    categories={categories || []}
+                    preselectedTopicId={params.topic_id}
+                />
             </div>
         </div>
     )

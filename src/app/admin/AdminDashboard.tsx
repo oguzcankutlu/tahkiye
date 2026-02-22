@@ -3,18 +3,26 @@
 import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut } from "lucide-react"
-import { createTopic, deleteTopic, createVideo, deleteVideo, deleteArticle, deleteProfile, createAd, deleteAd, toggleAd } from "./actions"
+import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut, LayoutGrid } from "lucide-react"
+import {
+    createTopic, deleteTopic,
+    createCategory, deleteCategory,
+    createVideo, deleteVideo,
+    deleteArticle, deleteProfile,
+    createAd, deleteAd, toggleAd
+} from "./actions"
 
-type Tab = 'users' | 'topics' | 'videos' | 'articles' | 'ads'
+type Tab = 'users' | 'categories' | 'topics' | 'videos' | 'articles' | 'ads'
 
-interface Topic { id: string; title: string; slug: string; description?: string | null; created_at: string }
+interface Category { id: string; title: string; slug: string; created_at: string }
+interface Topic { id: string; title: string; slug: string; category_id?: string | null; created_at: string }
 interface Video { id: string; title: string; video_url: string; duration?: string | null; created_at: string }
 interface Article { id: string; title: string; created_at: string; author_id: string; topic_id: string }
 interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string }
 interface Ad { id: string; title: string; image_url?: string | null; link_url?: string | null; position: string; is_active: boolean; created_at: string }
 
 interface Props {
+    categories: Category[]
     topics: Topic[]
     videos: Video[]
     articles: Article[]
@@ -26,8 +34,12 @@ function formatDate(d: string) {
     return new Date(d).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
 }
 
-export default function AdminDashboardClient({ topics, videos, articles, profiles, ads }: Props) {
+export default function AdminDashboardClient({ categories, topics, videos, articles, profiles, ads }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('users')
+
+    const [catError, setCatError] = useState<string | null>(null)
+    const [catSuccess, setCatSuccess] = useState(false)
+    const [isCatPending, startCatTransition] = useTransition()
 
     const [topicError, setTopicError] = useState<string | null>(null)
     const [topicSuccess, setTopicSuccess] = useState(false)
@@ -38,6 +50,17 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
     const [isVideoPending, startVideoTransition] = useTransition()
 
     const [isPending, startTransition] = useTransition()
+
+    function handleCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setCatError(null); setCatSuccess(false)
+        startCatTransition(async () => {
+            const result = await createCategory(formData)
+            if (result?.error) setCatError(result.error)
+            else { setCatSuccess(true); (e.target as HTMLFormElement).reset() }
+        })
+    }
 
     function handleTopicSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -89,9 +112,10 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
 
     const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
         { key: 'users', label: 'Üyeler', icon: <Users className="h-4 w-4" />, count: profiles.length },
-        { key: 'topics', label: 'Kategoriler', icon: <Tag className="h-4 w-4" />, count: topics.length },
+        { key: 'categories', label: 'Kategoriler', icon: <LayoutGrid className="h-4 w-4" />, count: categories.length },
+        { key: 'topics', label: 'Konular', icon: <Tag className="h-4 w-4" />, count: topics.length },
         { key: 'videos', label: 'Videolar', icon: <Video className="h-4 w-4" />, count: videos.length },
-        { key: 'articles', label: 'Konular', icon: <FileText className="h-4 w-4" />, count: articles.length },
+        { key: 'articles', label: 'Girdiler', icon: <FileText className="h-4 w-4" />, count: articles.length },
         { key: 'ads', label: 'Reklamlar', icon: <span className="text-sm">📢</span>, count: ads.length },
     ]
 
@@ -114,16 +138,6 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                         </button>
                     ))}
                 </nav>
-                <div className="p-3 border-t border-border/40 space-y-1">
-                    <a href="/yaz" className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary/60 text-muted-foreground transition-colors">
-                        <PlusCircle className="h-4 w-4 text-primary" /> Yeni Makale
-                    </a>
-                    <form action="/api/auth/signout">
-                        <button type="button" onClick={async () => { const { logout } = await import('../auth/actions/auth-actions'); await logout() }} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 w-full transition-colors">
-                            <LogOut className="h-4 w-4" /> Çıkış Yap
-                        </button>
-                    </form>
-                </div>
             </aside>
 
             {/* Main */}
@@ -132,31 +146,71 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                 {/* === ÜYELER === */}
                 {activeTab === 'users' && (
                     <div className="space-y-6 max-w-5xl">
-                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Üye Yönetimi <span className="text-sm font-normal text-muted-foreground">({profiles.length} üye)</span></h1>
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Üye Yönetimi ({profiles.length})</h1>
                         <div className="border border-border/40 rounded-lg overflow-hidden">
-                            <table className="w-full text-sm">
+                            <table className="w-full text-sm text-left">
                                 <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
                                     <tr>
-                                        <th className="px-4 py-3 text-left">Kullanıcı Adı</th>
-                                        <th className="px-4 py-3 text-left">Görünen Ad</th>
-                                        <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
-                                        <th className="px-4 py-3 text-right">İşlemler</th>
+                                        <th className="px-4 py-3">Üye</th>
+                                        <th className="px-4 py-3">Tarih</th>
+                                        <th className="px-4 py-3 text-right">İşlem</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {profiles.map(p => (
                                         <tr key={p.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
-                                            <td className="px-4 py-3 font-medium">@{p.username}</td>
-                                            <td className="px-4 py-3 text-muted-foreground">{p.full_name || '—'}</td>
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium text-foreground">@{p.username}</div>
+                                                <div className="text-xs text-muted-foreground">{p.full_name}</div>
+                                            </td>
                                             <td className="px-4 py-3 text-muted-foreground">{formatDate(p.created_at)}</td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteProfile, p.id, `"${p.username}" profilini silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors" title="Sil">
+                                                <button onClick={() => handleDelete(deleteProfile, p.id, `Profil silinsin mi? @${p.username}`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {profiles.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz üye yok.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* === KATEGORİLER === */}
+                {activeTab === 'categories' && (
+                    <div className="space-y-6 max-w-4xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Kategori Yönetimi</h1>
+                        <div className="p-5 border border-border/40 rounded-xl bg-card">
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Kategori</h2>
+                            <form onSubmit={handleCategorySubmit} className="space-y-3">
+                                {catError && <p className="text-sm text-destructive">{catError}</p>}
+                                {catSuccess && <p className="text-sm text-green-500">Kategori eklendi.</p>}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Input name="title" required placeholder="Başlık (örn: Bilim)" />
+                                    <Input name="slug" required placeholder="Slug (örn: bilim)" />
+                                </div>
+                                <div className="flex justify-end"><Button type="submit" disabled={isCatPending}>{isCatPending ? "Ekleniyor..." : "Ekle"}</Button></div>
+                            </form>
+                        </div>
+
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary/30 border-b border-border/40 uppercase text-xs text-muted-foreground">
+                                    <tr><th className="px-4 py-3">Kategori</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3 text-right">İşlem</th></tr>
+                                </thead>
+                                <tbody>
+                                    {categories.map(c => (
+                                        <tr key={c.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium">{c.title}</td>
+                                            <td className="px-4 py-3 text-muted-foreground text-xs">{c.slug}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteCategory, c.id, `Kategori silinsin mi? ${c.title}`)} className="p-1.5 text-destructive hover:bg-destructive/10">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -166,48 +220,43 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                 {/* === KONULAR === */}
                 {activeTab === 'topics' && (
                     <div className="space-y-6 max-w-4xl">
-                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Kategori Yönetimi</h1>
-
-                        {/* Yeni Konu Ekle */}
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Konu Yönetimi</h1>
                         <div className="p-5 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Kategori Ekle</h2>
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Konu</h2>
                             <form onSubmit={handleTopicSubmit} className="space-y-3">
                                 {topicError && <p className="text-sm text-destructive">{topicError}</p>}
-                                {topicSuccess && <p className="text-sm text-green-500">Konu eklendi! Sayfayı yenile.</p>}
+                                {topicSuccess && <p className="text-sm text-green-500">Konu eklendi.</p>}
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div><label className="text-xs text-muted-foreground mb-1 block">Başlık</label><Input name="title" required placeholder="Psikoloji" className="bg-background" /></div>
-                                    <div><label className="text-xs text-muted-foreground mb-1 block">Slug (URL)</label><Input name="slug" required placeholder="psikoloji" className="bg-background" /></div>
+                                    <Input name="title" required placeholder="Başlık (örn: Antigravity)" />
+                                    <Input name="slug" required placeholder="Slug (örn: antigravity)" />
                                 </div>
-                                <div><label className="text-xs text-muted-foreground mb-1 block">Açıklama (opsiyonel)</label><Input name="description" placeholder="Bu konunun kısa açıklaması..." className="bg-background" /></div>
-                                <div className="flex justify-end"><Button type="submit" disabled={isTopicPending} size="sm">{isTopicPending ? "Ekleniyor..." : "Konuyu Ekle"}</Button></div>
+                                <select name="category_id" className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
+                                    <option value="">Kategori Seçin (Opsiyonel)</option>
+                                    {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                </select>
+                                <div className="flex justify-end"><Button type="submit" disabled={isTopicPending}>{isTopicPending ? "Ekleniyor..." : "Konu Ekle"}</Button></div>
                             </form>
                         </div>
 
-                        {/* Mevcut Konular */}
                         <div className="border border-border/40 rounded-lg overflow-hidden">
-                            <table className="w-full text-sm">
-                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">Başlık</th>
-                                        <th className="px-4 py-3 text-left">Slug</th>
-                                        <th className="px-4 py-3 text-left">Tarih</th>
-                                        <th className="px-4 py-3 text-right">İşlemler</th>
-                                    </tr>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary/30 border-b border-border/40 text-xs uppercase text-muted-foreground">
+                                    <tr><th className="px-4 py-3">Konu</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3 text-right">İşlem</th></tr>
                                 </thead>
                                 <tbody>
                                     {topics.map(t => (
-                                        <tr key={t.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                        <tr key={t.id} className="border-b border-border/20 hover:bg-secondary/10">
                                             <td className="px-4 py-3 font-medium">{t.title}</td>
-                                            <td className="px-4 py-3 text-muted-foreground text-xs font-mono">{t.slug}</td>
-                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(t.created_at)}</td>
+                                            <td className="px-4 py-3 text-muted-foreground text-xs">
+                                                {categories.find(c => c.id === t.category_id)?.title || '—'}
+                                            </td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteTopic, t.id, `"${t.title}" konusunu silmek istediğine emin misin? İçindeki makaleler de etkilenebilir!`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                <button onClick={() => handleDelete(deleteTopic, t.id, `Konu silinsin mi? ${t.title}`)} className="p-1.5 text-destructive hover:bg-destructive/10">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {topics.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz konu yok.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -216,88 +265,57 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
 
                 {/* === VİDEOLAR === */}
                 {activeTab === 'videos' && (
-                    <div className="space-y-6 max-w-4xl">
+                    <div className="space-y-6 max-w-5xl">
                         <h1 className="text-xl font-bold border-b border-border/40 pb-3">Video Yönetimi</h1>
-
-                        <div className="p-5 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Video Ekle</h2>
-                            <form onSubmit={handleVideoSubmit} className="space-y-3">
-                                {videoError && <p className="text-sm text-destructive">{videoError}</p>}
-                                {videoSuccess && <p className="text-sm text-green-500">Video eklendi! Sayfayı yenile.</p>}
-                                <div><label className="text-xs text-muted-foreground mb-1 block">Video Başlığı</label><Input name="title" required placeholder="YouTube başlığı..." className="bg-background" /></div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-xs text-muted-foreground mb-1 block">Konu</label>
-                                        <select name="topic_id" required defaultValue="" className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
-                                            <option value="" disabled>Konu seçin...</option>
-                                            {topics.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-                                        </select>
-                                    </div>
-                                    <div><label className="text-xs text-muted-foreground mb-1 block">Süre (ör: 14:20)</label><Input name="duration" placeholder="14:20" className="bg-background" /></div>
-                                </div>
-                                <div><label className="text-xs text-muted-foreground mb-1 block">YouTube URL</label><Input name="video_url" required placeholder="https://youtube.com/watch?v=..." className="bg-background" /></div>
-                                <div className="flex justify-end"><Button type="submit" disabled={isVideoPending} size="sm">{isVideoPending ? "Ekleniyor..." : "Videoyu Ekle"}</Button></div>
-                            </form>
-                        </div>
-
                         <div className="border border-border/40 rounded-lg overflow-hidden">
-                            <table className="w-full text-sm">
-                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">Başlık</th>
-                                        <th className="px-4 py-3 text-left">Süre</th>
-                                        <th className="px-4 py-3 text-left">Tarih</th>
-                                        <th className="px-4 py-3 text-right">İşlem</th>
-                                    </tr>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary/30 border-b border-border/40 uppercase text-xs text-muted-foreground">
+                                    <tr><th className="px-4 py-3">Video</th><th className="px-4 py-3">Tarih</th><th className="px-4 py-3 text-right">İşlem</th></tr>
                                 </thead>
                                 <tbody>
                                     {videos.map(v => (
                                         <tr key={v.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
-                                            <td className="px-4 py-3 font-medium max-w-xs truncate">{v.title}</td>
-                                            <td className="px-4 py-3 text-muted-foreground">{v.duration || '—'}</td>
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium truncate max-w-md">{v.title}</div>
+                                                <div className="text-xs text-muted-foreground truncate max-w-md">{v.video_url}</div>
+                                            </td>
                                             <td className="px-4 py-3 text-muted-foreground">{formatDate(v.created_at)}</td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteVideo, v.id, `"${v.title}" videosunu silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                <button onClick={() => handleDelete(deleteVideo, v.id, `Video silinsin mi?` + v.title)} className="p-1.5 text-destructive hover:bg-destructive/10">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {videos.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz video yok.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 )}
 
-                {/* === MAKALELEr === */}
+                {/* === GİRDİLER (Articles) === */}
                 {activeTab === 'articles' && (
                     <div className="space-y-6 max-w-5xl">
-                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Konu Yönetimi <span className="text-sm font-normal text-muted-foreground">({articles.length} konu)</span></h1>
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Girdi Yönetimi ({articles.length})</h1>
                         <div className="border border-border/40 rounded-lg overflow-hidden">
-                            <table className="w-full text-sm">
-                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">Başlık</th>
-                                        <th className="px-4 py-3 text-left">Tarih</th>
-                                        <th className="px-4 py-3 text-right">İşlemler</th>
-                                    </tr>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary/30 border-b border-border/40 text-xs uppercase text-muted-foreground">
+                                    <tr><th className="px-4 py-3">Girdi Özeti</th><th className="px-4 py-3">Konu</th><th className="px-4 py-3 text-right">İşlem</th></tr>
                                 </thead>
                                 <tbody>
                                     {articles.map(a => (
-                                        <tr key={a.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
-                                            <td className="px-4 py-3 font-medium max-w-sm truncate">
-                                                <a href={`/article/${a.id}`} target="_blank" className="hover:text-primary transition-colors">{a.title}</a>
+                                        <tr key={a.id} className="border-b border-border/20 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium max-w-md truncate">{a.title}</td>
+                                            <td className="px-4 py-3 text-muted-foreground text-xs">
+                                                {topics.find(t => t.id === a.topic_id)?.title || '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(a.created_at)}</td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteArticle, a.id, `"${a.title}" makalesini silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                <button onClick={() => handleDelete(deleteArticle, a.id, `Girdi silinsin mi?`)} className="p-1.5 text-destructive hover:bg-destructive/10">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {articles.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">Henüz makale yok.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -306,66 +324,50 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
 
                 {/* === REKLAMLAR === */}
                 {activeTab === 'ads' && (
-                    <div className="space-y-6 max-w-4xl">
+                    <div className="space-y-6 max-w-5xl">
                         <h1 className="text-xl font-bold border-b border-border/40 pb-3">Reklam Yönetimi</h1>
-
                         <div className="p-5 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Reklam Ekle</h2>
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Reklam</h2>
                             <form onSubmit={handleAdSubmit} className="space-y-3">
-                                {adError && <p className="text-sm text-destructive">{adError}</p>}
-                                {adSuccess && <p className="text-sm text-green-500">Reklam eklendi! Sayfayı yenile.</p>}
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div><label className="text-xs text-muted-foreground mb-1 block">Başlık *</label><Input name="title" required placeholder="Yaz Kampanyası" className="bg-background" /></div>
-                                    <div>
-                                        <label className="text-xs text-muted-foreground mb-1 block">Konum</label>
-                                        <select name="position" defaultValue="sidebar" className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
-                                            <option value="sidebar">Kenar Çubuğu</option>
-                                            <option value="header">Üst Banner</option>
-                                            <option value="footer">Alt Banner</option>
-                                            <option value="content">İçerik Arası</option>
-                                        </select>
-                                    </div>
+                                    <Input name="title" required placeholder="Reklam Başlığı" />
+                                    <select name="position" defaultValue="sidebar" className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+                                        <option value="sidebar">Yan Menü</option>
+                                        <option value="content">İçerik Arası</option>
+                                    </select>
                                 </div>
-                                <div><label className="text-xs text-muted-foreground mb-1 block">Görsel URL</label><Input name="image_url" placeholder="https://..." className="bg-background" /></div>
-                                <div><label className="text-xs text-muted-foreground mb-1 block">Bağlantı URL</label><Input name="link_url" placeholder="https://reklam-linki.com" className="bg-background" /></div>
-                                <div className="flex justify-end"><Button type="submit" disabled={isAdPending} size="sm">{isAdPending ? "Ekleniyor..." : "Reklamı Ekle"}</Button></div>
+                                <Input name="image_url" placeholder="Görsel URL" />
+                                <Input name="link_url" placeholder="Yönlendirme URL" />
+                                <div className="flex justify-end"><Button type="submit" disabled={isAdPending}>Reklam Ekle</Button></div>
                             </form>
                         </div>
 
                         <div className="border border-border/40 rounded-lg overflow-hidden">
-                            <table className="w-full text-sm">
-                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left">Başlık</th>
-                                        <th className="px-4 py-3 text-left">Konum</th>
-                                        <th className="px-4 py-3 text-left">Durum</th>
-                                        <th className="px-4 py-3 text-right">İşlem</th>
-                                    </tr>
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-secondary/30 border-b border-border/40 text-xs uppercase text-muted-foreground">
+                                    <tr><th className="px-4 py-3">Reklam</th><th className="px-4 py-3">Durum</th><th className="px-4 py-3 text-right">İşlem</th></tr>
                                 </thead>
                                 <tbody>
                                     {ads.map(ad => (
-                                        <tr key={ad.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
-                                            <td className="px-4 py-3 font-medium max-w-xs truncate">{ad.title}</td>
-                                            <td className="px-4 py-3 text-muted-foreground capitalize">{ad.position}</td>
+                                        <tr key={ad.id} className="border-b border-border/20 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium">{ad.title}</td>
                                             <td className="px-4 py-3">
                                                 <button onClick={() => handleToggleAd(ad.id, ad.is_active)} className={`px-2 py-0.5 rounded-full text-xs font-semibold ${ad.is_active ? 'bg-green-500/15 text-green-600' : 'bg-secondary text-muted-foreground'}`}>
                                                     {ad.is_active ? 'Aktif' : 'Pasif'}
                                                 </button>
                                             </td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteAd, ad.id, `"${ad.title}" reklamını silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                <button onClick={() => handleDelete(deleteAd, ad.id, `Reklam silinsin mi?`)} className="p-1.5 text-destructive">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
-                                    {ads.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz reklam yok.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 )}
-
             </main>
         </div>
     )
