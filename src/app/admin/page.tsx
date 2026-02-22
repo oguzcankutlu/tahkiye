@@ -1,13 +1,16 @@
 import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation"
 import AdminDashboardClient from "./AdminDashboard"
+import AdminLoginGate from "./AdminLoginGate"
 
 export default async function AdminPage() {
     const supabase = await createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-        redirect('/login?redirect=/admin')
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // If not authenticated server-side, show the client-side login gate
+    // (handles prod session cookie issues gracefully)
+    if (!user) {
+        return <AdminLoginGate />
     }
 
     // Fetch all data for the dashboard

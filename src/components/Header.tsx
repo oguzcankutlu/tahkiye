@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { ThemeToggle } from "./ThemeToggle"
-import { Menu, PlaySquare, X, User, Search } from "lucide-react"
+import { Menu, PlaySquare, Search } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { UserMenu } from "./UserMenu"
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -57,13 +58,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
                         <div className="h-6 w-px bg-border/50 mx-1 hidden sm:block" />
 
-                        <Link
-                            href="/login"
-                            className="p-2 text-primary hover:text-primary/80 hover:bg-secondary/40 rounded-md transition-colors flex items-center justify-center"
-                            aria-label="Giriş Yap / Kayıt Ol"
-                        >
-                            <User className="h-5 w-5" />
-                        </Link>
+                        <UserMenu />
                     </div>
                 </div>
             </header>
