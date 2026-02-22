@@ -1,6 +1,10 @@
-import { Share2, BookmarkPlus } from "lucide-react"
+"use client"
+
+import { useState } from "react"
+import { Share2, BookmarkPlus, Pencil, MessageCircle, Facebook, Send, Copy } from "lucide-react"
 import { Accordion } from "./Accordion"
 import Link from "next/link"
+import { voteArticle } from "@/app/actions/entry-actions"
 
 interface Author {
     id: string
@@ -23,14 +27,20 @@ interface Article {
     created_at: string
     author: Author
     topic: Topic
+    upvotes?: number
+    downvotes?: number
 }
 
 interface FeedProps {
     article: Article
     relatedArticles: { id: string; title: string }[]
+    currentUserId?: string
 }
 
-export function Feed({ article, relatedArticles }: FeedProps) {
+export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
+    const [showShare, setShowShare] = useState(false)
+    const [isVoting, setIsVoting] = useState(false)
+
     const formattedDate = new Date(article.created_at).toLocaleDateString("tr-TR", {
         day: "2-digit",
         month: "2-digit",
@@ -39,9 +49,29 @@ export function Feed({ article, relatedArticles }: FeedProps) {
 
     const initialLetter = article.author?.full_name
         ? article.author.full_name.charAt(0).toUpperCase()
-        : article.author?.username.charAt(0).toUpperCase() || 'A'
+        : article.author?.username?.charAt(0).toUpperCase() || 'A'
 
     const displayName = article.author?.full_name || article.author?.username || 'Bilinmeyen Yazar'
+    const isOwner = currentUserId === article.author?.id
+
+    const handleVote = async (type: 'up' | 'down') => {
+        if (!currentUserId) {
+            alert("Oy vermek için giriş yapmalısınız.")
+            return
+        }
+        setIsVoting(true)
+        const res = await voteArticle(article.id, type)
+        if (res.error) alert(res.error)
+        setIsVoting(false)
+    }
+
+    const shareLink = typeof window !== 'undefined' ? window.location.href : ""
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(shareLink)
+        alert("Link kopyalandı!")
+        setShowShare(false)
+    }
 
     return (
         <div className="w-full pb-20">
@@ -77,7 +107,7 @@ export function Feed({ article, relatedArticles }: FeedProps) {
 
                 {/* Girdi Metni */}
                 <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-lg prose-p:mb-6">
-                    <p>{article.content}</p>
+                    <p className="whitespace-pre-wrap">{article.content}</p>
                 </div>
 
                 {/* İlgili İçerikler */}
@@ -103,14 +133,22 @@ export function Feed({ article, relatedArticles }: FeedProps) {
 
                 {/* Aksiyon Barı ve Tarih */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border/40 mt-8">
-                    <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground w-full sm:w-auto">
-                        <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors">
-                            <span className="text-base">👏</span>
-                            <span>{Math.floor(Math.random() * 500) + 50}</span>
+                    <div className="flex items-center gap-6 text-xs font-medium text-muted-foreground w-full sm:w-auto">
+                        <button
+                            onClick={() => handleVote('up')}
+                            disabled={isVoting}
+                            className="flex items-center gap-2 hover:text-primary transition-colors group"
+                        >
+                            <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👏</span>
+                            <span className="font-bold tabular-nums">{article.upvotes || 0}</span>
                         </button>
-                        <button className="flex items-center gap-1.5 hover:text-destructive transition-colors">
-                            <span className="text-base">👎</span>
-                            <span>{Math.floor(Math.random() * 20) + 1}</span>
+                        <button
+                            onClick={() => handleVote('down')}
+                            disabled={isVoting}
+                            className="flex items-center gap-2 hover:text-destructive transition-colors group"
+                        >
+                            <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
+                            <span className="font-bold tabular-nums">{article.downvotes || 0}</span>
                         </button>
                     </div>
 
@@ -119,14 +157,49 @@ export function Feed({ article, relatedArticles }: FeedProps) {
                             Yayınlandı: {formattedDate}
                         </span>
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border/50 rounded-md hover:bg-secondary/50 hover:text-primary transition-colors">
-                                <BookmarkPlus className="h-4 w-4" />
-                                Kaydet
-                            </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border/50 rounded-md hover:bg-secondary/50 hover:text-primary transition-colors">
-                                <Share2 className="h-4 w-4" />
-                                Paylaş
-                            </button>
+                            {/* Share Button */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowShare(!showShare)}
+                                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold border border-border/50 rounded-lg bg-secondary/30 hover:bg-secondary hover:text-primary transition-all"
+                                >
+                                    <Share2 className="h-4 w-4" />
+                                    Paylaş
+                                </button>
+
+                                {showShare && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setShowShare(false)} />
+                                        <div className="absolute bottom-full right-0 mb-3 w-48 bg-card border border-border/80 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2">
+                                            <div className="grid grid-cols-1 gap-1">
+                                                <a href={`https://wa.me/?text=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                    <MessageCircle className="h-4 w-4 text-green-500" /> WhatsApp
+                                                </a>
+                                                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                    <Facebook className="h-4 w-4 text-blue-600" /> Facebook
+                                                </a>
+                                                <a href={`https://t.me/share/url?url=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                    <Send className="h-4 w-4 text-sky-500" /> Telegram
+                                                </a>
+                                                <button onClick={copyToClipboard} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors border-t border-border/40 mt-1">
+                                                    <Copy className="h-4 w-4 text-muted-foreground" /> Linki Kopyala
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Edit Button for owner */}
+                            {isOwner && (
+                                <Link
+                                    href={`/yaz?edit_id=${article.id}`}
+                                    className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold border border-primary/30 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                    Düzenle
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>

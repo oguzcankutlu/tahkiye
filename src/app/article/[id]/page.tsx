@@ -38,5 +38,7 @@ export default async function ArticlePage({
         .neq('id', article.id)
         .limit(3)
 
-    return <Feed article={article as any} relatedArticles={relatedArticles || []} />
+    const { data: { user } } = await supabase.auth.getUser()
+
+    return <Feed article={article as any} relatedArticles={relatedArticles || []} currentUserId={user?.id} />
 }
