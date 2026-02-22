@@ -2,6 +2,7 @@ import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
 import { GirdiItem } from "@/components/GirdiItem"
+import { AdSection } from "@/components/AdSection"
 
 interface ArticleWithAuthor {
     id: string
@@ -38,7 +39,7 @@ export default async function TopicPage({
     const { data: rawArticles } = await supabase
         .from("articles")
         .select(`
-            id, title, content, created_at, author_id,
+            id, title, content, created_at, author_id, related_links, related_videos, upvotes, downvotes,
             author:profiles ( username, full_name, avatar_url )
         `)
         .eq('topic_id', topic.id)
@@ -49,6 +50,9 @@ export default async function TopicPage({
 
     return (
         <div className="w-full pb-20">
+            {/* Top Ad in Topic */}
+            <AdSection position="top" className="mb-8" />
+
             {/* Header / Topic Info */}
             <div className="mb-8 border-b border-border/40 pb-6">
                 <div className="flex items-center gap-2 mb-2">
@@ -94,6 +98,11 @@ export default async function TopicPage({
                         />
                     ))
                 )}
+            </div>
+
+            {/* Bottom Ad in Topic */}
+            <div className="mt-12">
+                <AdSection position="bottom" className="mb-8" />
             </div>
         </div>
     )

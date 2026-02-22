@@ -6,6 +6,7 @@ import { Accordion } from "./Accordion"
 import Link from "next/link"
 import { voteArticle } from "@/app/actions/entry-actions"
 import { useVideo } from "@/components/VideoProvider"
+import { AdSection } from "./AdSection"
 
 interface Author {
     id: string
@@ -92,9 +93,7 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
     return (
         <div className="w-full pb-20">
             {/* Üst Reklam Alanı Placeholder */}
-            <div className="w-full h-24 bg-secondary/30 rounded-lg border border-dashed border-border flex items-center justify-center text-muted-foreground text-sm mb-8">
-                Reklam Alanı (Üst)
-            </div>
+            <AdSection position="top" className="mb-8" />
 
             <article className="space-y-6">
                 {/* Başlık */}
@@ -254,9 +253,7 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
             </article>
 
             {/* Alt Reklam Alanı Placeholder */}
-            <div className="w-full h-24 bg-secondary/30 rounded-lg border border-dashed border-border flex items-center justify-center text-muted-foreground text-sm mt-12 mb-8">
-                Reklam Alanı (Alt)
-            </div>
+            <AdSection position="bottom" className="mt-12 mb-8" />
         </div>
     )
 }

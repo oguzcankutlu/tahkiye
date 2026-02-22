@@ -11,7 +11,7 @@ export interface VideoWithTopic {
     video_url: string
     duration: string | null
     thumbnail_url: string | null
-    topic: { id: string; title: string } | { id: string; title: string }[] | null
+    topic: { id: string; title: string, slug: string } | { id: string; title: string, slug: string }[] | null
 }
 
 export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
@@ -21,7 +21,7 @@ export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video) => {
                 const topicTitle = Array.isArray(video.topic) ? video.topic[0]?.title : video.topic?.title
-                const topicId = Array.isArray(video.topic) ? video.topic[0]?.id : video.topic?.id
+                const topicSlug = Array.isArray(video.topic) ? video.topic[0]?.slug : video.topic?.slug
 
                 return (
                     <div key={video.id} id={`video-${video.id}`} className="group flex flex-col gap-3">
@@ -58,8 +58,8 @@ export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
                         </button>
 
                         <div className="mt-auto">
-                            {topicId ? (
-                                <Link href={`/topic/${topicId}`} className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors line-clamp-1 w-max max-w-full">
+                            {topicSlug ? (
+                                <Link href={`/topic/${topicSlug}`} className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors line-clamp-1 w-max max-w-full">
                                     {topicTitle}
                                 </Link>
                             ) : (
