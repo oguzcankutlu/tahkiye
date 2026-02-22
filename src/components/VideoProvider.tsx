@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react"
 // @ts-ignore
 import { X, Loader2 } from "lucide-react"
+import { getYouTubeId, getVimeoId } from "@/lib/utils"
 
 interface VideoContextType {
     playVideo: (url: string, title?: string) => void
@@ -20,19 +21,6 @@ export function useVideo() {
         throw new Error("useVideo must be used within a VideoProvider")
     }
     return context
-}
-
-// Helpers to extract IDs
-function getYouTubeId(url: string) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/
-    const match = url.match(regExp)
-    return (match && match[2].length === 11) ? match[2] : null
-}
-
-function getVimeoId(url: string) {
-    const regExp = /(?:www\.|player\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_\-]+)?/i
-    const match = url.match(regExp)
-    return match ? match[1] : null
 }
 
 export function VideoProvider({ children }: { children: ReactNode }) {

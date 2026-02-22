@@ -3,6 +3,7 @@
 import { Play } from "lucide-react"
 import Link from "next/link"
 import { useVideo } from "@/components/VideoProvider"
+import { getYouTubeId } from "@/lib/utils"
 
 export interface VideoWithTopic {
     id: string
@@ -27,7 +28,16 @@ export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
                         <button type="button" onClick={() => playVideo(video.video_url, video.title)} className="block cursor-pointer text-left w-full">
                             {/* Thumbnail Container */}
                             <div className={`w-full aspect-video rounded-xl overflow-hidden ${video.thumbnail_url || 'bg-secondary'} relative border border-border/50 group-hover:border-primary transition-colors shadow-sm`}>
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {getYouTubeId(video.video_url) ? (
+                                    <img
+                                        src={`https://img.youtube.com/vi/${getYouTubeId(video.video_url)}/mqdefault.jpg`}
+                                        alt={video.title}
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                    />
+                                ) : video.thumbnail_url ? (
+                                    <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+                                ) : null}
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                     <div className="bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
                                         <Play className="h-6 w-6" fill="currentColor" />
                                     </div>
