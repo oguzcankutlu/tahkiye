@@ -5,21 +5,25 @@ import AdminDashboardClient from "./AdminDashboard"
 export default async function AdminPage() {
     const supabase = await createClient()
 
-    // 1. Yetki Kontrolü
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-
     if (authError || !user) {
-        redirect('/login')
+        redirect('/login?redirect=/admin')
     }
 
-    // Basit RLS veya Role check (Ek güvenlik: bu sayfaya sadece yetkili biri erişmeli)
-    // Şimdilik sadece login olması admin panelini açıyor varsayıyoruz (Senaryo gereği)
+    // Fetch all data for the dashboard
+    const [topicsRes, videosRes, articlesRes, profilesRes] = await Promise.all([
+        supabase.from('topics').select('id, title, slug, description, created_at').order('created_at', { ascending: false }),
+        supabase.from('videos').select('id, title, video_url, duration, created_at').order('created_at', { ascending: false }),
+        supabase.from('articles').select('id, title, created_at, author_id, topic_id').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, username, full_name, avatar_url, created_at').order('created_at', { ascending: false }),
+    ])
 
-    // 2. Konuları çek
-    const { data: topics } = await supabase
-        .from('topics')
-        .select('id, title, slug')
-        .order('title', { ascending: true })
-
-    return <AdminDashboardClient topics={topics || []} />
+    return (
+        <AdminDashboardClient
+            topics={topicsRes.data || []}
+            videos={videosRes.data || []}
+            articles={articlesRes.data || []}
+            profiles={profilesRes.data || []}
+        />
+    )
 }

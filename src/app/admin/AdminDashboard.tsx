@@ -3,19 +3,29 @@
 import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Users, FileText, Image, Layout, LogOut, PlusCircle } from "lucide-react"
-import { createTopic, createVideo } from "./actions"
+import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut } from "lucide-react"
+import { createTopic, deleteTopic, createVideo, deleteVideo, deleteArticle, deleteProfile } from "./actions"
 
-type Tab = 'users' | 'content' | 'ads' | 'pages'
+type Tab = 'users' | 'topics' | 'videos' | 'articles'
 
-interface Topic {
-    id: string
-    title: string
-    slug: string
+interface Topic { id: string; title: string; slug: string; description?: string | null; created_at: string }
+interface Video { id: string; title: string; video_url: string; duration?: string | null; created_at: string }
+interface Article { id: string; title: string; created_at: string; author_id: string; topic_id: string }
+interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string }
+
+interface Props {
+    topics: Topic[]
+    videos: Video[]
+    articles: Article[]
+    profiles: Profile[]
 }
 
-export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
-    const [activeTab, setActiveTab] = useState<Tab>('content')
+function formatDate(d: string) {
+    return new Date(d).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
+}
+
+export default function AdminDashboardClient({ topics, videos, articles, profiles }: Props) {
+    const [activeTab, setActiveTab] = useState<Tab>('users')
 
     const [topicError, setTopicError] = useState<string | null>(null)
     const [topicSuccess, setTopicSuccess] = useState(false)
@@ -24,6 +34,8 @@ export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
     const [videoError, setVideoError] = useState<string | null>(null)
     const [videoSuccess, setVideoSuccess] = useState(false)
     const [isVideoPending, startVideoTransition] = useTransition()
+
+    const [isPending, startTransition] = useTransition()
 
     function handleTopicSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -47,134 +59,228 @@ export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
         })
     }
 
+    function handleDelete(action: (fd: FormData) => Promise<any>, id: string, confirmMsg: string) {
+        if (!confirm(confirmMsg)) return
+        const fd = new FormData(); fd.set('id', id)
+        startTransition(() => action(fd))
+    }
+
+    const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
+        { key: 'users', label: 'Üyeler', icon: <Users className="h-4 w-4" />, count: profiles.length },
+        { key: 'topics', label: 'Konular', icon: <Tag className="h-4 w-4" />, count: topics.length },
+        { key: 'videos', label: 'Videolar', icon: <Video className="h-4 w-4" />, count: videos.length },
+        { key: 'articles', label: 'Makaleler', icon: <FileText className="h-4 w-4" />, count: articles.length },
+    ]
+
     return (
         <div className="flex min-h-[calc(100vh-64px)] w-full bg-background text-foreground">
-            {/* Admin Sidebar */}
-            <aside className="w-64 border-r border-border/40 bg-secondary/20 flex flex-col shrink-0">
-                <div className="h-16 flex items-center px-6 border-b border-border/40">
-                    <span className="font-bold text-xl tracking-tight">tahkiye <span className="text-primary text-sm font-normal">CMS</span></span>
+            {/* Sidebar */}
+            <aside className="w-56 border-r border-border/40 bg-secondary/10 flex flex-col shrink-0">
+                <div className="h-14 flex items-center px-5 border-b border-border/40">
+                    <span className="font-bold text-base tracking-tight">tahkiye <span className="text-primary text-xs font-normal">Yönetici</span></span>
                 </div>
-
-                <nav className="flex-1 p-4 flex flex-col gap-2">
-                    <button
-                        onClick={() => setActiveTab('content')}
-                        className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'content' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary/50 text-muted-foreground'}`}
-                    >
-                        <FileText className="h-4 w-4" /> İçerik Yönetimi
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'users' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary/50 text-muted-foreground'}`}
-                    >
-                        <Users className="h-4 w-4" /> Kullanıcılar
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('ads')}
-                        className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'ads' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary/50 text-muted-foreground'}`}
-                    >
-                        <Image className="h-4 w-4" /> Reklam Alanları
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('pages')}
-                        className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'pages' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary/50 text-muted-foreground'}`}
-                    >
-                        <Layout className="h-4 w-4" /> Sabit Sayfalar
-                    </button>
+                <nav className="flex-1 p-3 flex flex-col gap-1">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`flex items-center justify-between gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === tab.key ? 'bg-primary/15 text-primary' : 'hover:bg-secondary/60 text-muted-foreground'}`}
+                        >
+                            <span className="flex items-center gap-2">{tab.icon}{tab.label}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{tab.count}</span>
+                        </button>
+                    ))}
                 </nav>
-
-                <div className="p-4 border-t border-border/40">
-                    <button className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 w-full transition-colors">
-                        <LogOut className="h-4 w-4" /> Çıkış Yap
-                    </button>
+                <div className="p-3 border-t border-border/40 space-y-1">
+                    <a href="/yaz" className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary/60 text-muted-foreground transition-colors">
+                        <PlusCircle className="h-4 w-4 text-primary" /> Yeni Makale
+                    </a>
+                    <form action="/api/auth/signout">
+                        <button type="button" onClick={async () => { const { logout } = await import('../auth/actions/auth-actions'); await logout() }} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 w-full transition-colors">
+                            <LogOut className="h-4 w-4" /> Çıkış Yap
+                        </button>
+                    </form>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                {activeTab === 'content' && (
-                    <div className="space-y-10 max-w-4xl">
-                        <div className="flex items-center justify-between border-b border-border/40 pb-4">
-                            <h1 className="text-2xl font-bold tracking-tight">İçerik Yönetimi (CMS)</h1>
-                        </div>
+            {/* Main */}
+            <main className="flex-1 p-6 overflow-y-auto">
 
-                        {/* Yeni Konu Ekle */}
-                        <div className="p-6 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
-                                <PlusCircle className="h-5 w-5 text-primary" />
-                                Yeni Ana Konu Ekle
-                            </h2>
-                            <form onSubmit={handleTopicSubmit} className="space-y-4">
-                                {topicError && <p className="text-sm text-destructive">{topicError}</p>}
-                                {topicSuccess && <p className="text-sm text-green-500">Konu başarıyla eklendi!</p>}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-muted-foreground mb-1">Görünür Başlık</label>
-                                        <Input name="title" required placeholder="Örn: Psikolojik Analizler" className="bg-background" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-muted-foreground mb-1">URL (Slug)</label>
-                                        <Input name="slug" required placeholder="orn-psikolojik-analizler" className="bg-background" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-1">Kısa Açıklama (Opsiyonel)</label>
-                                    <Input name="description" placeholder="Bu konunun ne hakkında olduğunu özetleyin." className="bg-background" />
-                                </div>
-                                <div className="flex justify-end pt-2">
-                                    <Button type="submit" disabled={isTopicPending}>
-                                        {isTopicPending ? "Ekleniyor..." : "Konuyu Kaydet"}
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* Yeni Video Ekle */}
-                        <div className="p-6 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-lg font-bold flex items-center gap-2 mb-6">
-                                <PlusCircle className="h-5 w-5 text-primary" />
-                                Yeni Video Ekle
-                            </h2>
-                            <form onSubmit={handleVideoSubmit} className="space-y-4">
-                                {videoError && <p className="text-sm text-destructive">{videoError}</p>}
-                                {videoSuccess && <p className="text-sm text-green-500">Video başarıyla eklendi!</p>}
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-1">Video Başlığı</label>
-                                    <Input name="title" required placeholder="YouTube'daki tam başlık..." className="bg-background" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-muted-foreground mb-1">İlişkili Konu</label>
-                                        <select
-                                            name="topic_id"
-                                            required
-                                            defaultValue=""
-                                            className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        >
-                                            <option value="" disabled>Konu seçin...</option>
-                                            {topics.map(t => (
-                                                <option key={t.id} value={t.id}>{t.title}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-muted-foreground mb-1">Video Süresi</label>
-                                        <Input name="duration" placeholder="Örn: 14:20" className="bg-background" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-muted-foreground mb-1">Video URL (Embed/YouTube)</label>
-                                    <Input name="video_url" required placeholder="https://www.youtube.com/watch?v=..." className="bg-background" />
-                                </div>
-                                <div className="flex justify-end pt-2">
-                                    <Button type="submit" disabled={isVideoPending}>
-                                        {isVideoPending ? "Ekleniyor..." : "Videoyu Yayınla"}
-                                    </Button>
-                                </div>
-                            </form>
+                {/* === ÜYELER === */}
+                {activeTab === 'users' && (
+                    <div className="space-y-6 max-w-5xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Üye Yönetimi <span className="text-sm font-normal text-muted-foreground">({profiles.length} üye)</span></h1>
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left">Kullanıcı Adı</th>
+                                        <th className="px-4 py-3 text-left">Görünen Ad</th>
+                                        <th className="px-4 py-3 text-left">Kayıt Tarihi</th>
+                                        <th className="px-4 py-3 text-right">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {profiles.map(p => (
+                                        <tr key={p.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium">@{p.username}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{p.full_name || '—'}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(p.created_at)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteProfile, p.id, `"${p.username}" profilini silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors" title="Sil">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {profiles.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz üye yok.</td></tr>}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
-                {/* Diğer tabları (pages, ads, users) şablon olarak bırakıyoruz. CMS genişledikçe bunlar da bağlanabilir.*/}
+
+                {/* === KONULAR === */}
+                {activeTab === 'topics' && (
+                    <div className="space-y-6 max-w-4xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Konu Yönetimi</h1>
+
+                        {/* Yeni Konu Ekle */}
+                        <div className="p-5 border border-border/40 rounded-xl bg-card">
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Konu Ekle</h2>
+                            <form onSubmit={handleTopicSubmit} className="space-y-3">
+                                {topicError && <p className="text-sm text-destructive">{topicError}</p>}
+                                {topicSuccess && <p className="text-sm text-green-500">Konu eklendi! Sayfayı yenile.</p>}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="text-xs text-muted-foreground mb-1 block">Başlık</label><Input name="title" required placeholder="Psikoloji" className="bg-background" /></div>
+                                    <div><label className="text-xs text-muted-foreground mb-1 block">Slug (URL)</label><Input name="slug" required placeholder="psikoloji" className="bg-background" /></div>
+                                </div>
+                                <div><label className="text-xs text-muted-foreground mb-1 block">Açıklama (opsiyonel)</label><Input name="description" placeholder="Bu konunun kısa açıklaması..." className="bg-background" /></div>
+                                <div className="flex justify-end"><Button type="submit" disabled={isTopicPending} size="sm">{isTopicPending ? "Ekleniyor..." : "Konuyu Ekle"}</Button></div>
+                            </form>
+                        </div>
+
+                        {/* Mevcut Konular */}
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left">Başlık</th>
+                                        <th className="px-4 py-3 text-left">Slug</th>
+                                        <th className="px-4 py-3 text-left">Tarih</th>
+                                        <th className="px-4 py-3 text-right">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {topics.map(t => (
+                                        <tr key={t.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium">{t.title}</td>
+                                            <td className="px-4 py-3 text-muted-foreground text-xs font-mono">{t.slug}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(t.created_at)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteTopic, t.id, `"${t.title}" konusunu silmek istediğine emin misin? İçindeki makaleler de etkilenebilir!`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {topics.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz konu yok.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* === VİDEOLAR === */}
+                {activeTab === 'videos' && (
+                    <div className="space-y-6 max-w-4xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Video Yönetimi</h1>
+
+                        <div className="p-5 border border-border/40 rounded-xl bg-card">
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Video Ekle</h2>
+                            <form onSubmit={handleVideoSubmit} className="space-y-3">
+                                {videoError && <p className="text-sm text-destructive">{videoError}</p>}
+                                {videoSuccess && <p className="text-sm text-green-500">Video eklendi! Sayfayı yenile.</p>}
+                                <div><label className="text-xs text-muted-foreground mb-1 block">Video Başlığı</label><Input name="title" required placeholder="YouTube başlığı..." className="bg-background" /></div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-muted-foreground mb-1 block">Konu</label>
+                                        <select name="topic_id" required defaultValue="" className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
+                                            <option value="" disabled>Konu seçin...</option>
+                                            {topics.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                                        </select>
+                                    </div>
+                                    <div><label className="text-xs text-muted-foreground mb-1 block">Süre (ör: 14:20)</label><Input name="duration" placeholder="14:20" className="bg-background" /></div>
+                                </div>
+                                <div><label className="text-xs text-muted-foreground mb-1 block">YouTube URL</label><Input name="video_url" required placeholder="https://youtube.com/watch?v=..." className="bg-background" /></div>
+                                <div className="flex justify-end"><Button type="submit" disabled={isVideoPending} size="sm">{isVideoPending ? "Ekleniyor..." : "Videoyu Ekle"}</Button></div>
+                            </form>
+                        </div>
+
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left">Başlık</th>
+                                        <th className="px-4 py-3 text-left">Süre</th>
+                                        <th className="px-4 py-3 text-left">Tarih</th>
+                                        <th className="px-4 py-3 text-right">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {videos.map(v => (
+                                        <tr key={v.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium max-w-xs truncate">{v.title}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{v.duration || '—'}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(v.created_at)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteVideo, v.id, `"${v.title}" videosunu silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {videos.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz video yok.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* === MAKALELEr === */}
+                {activeTab === 'articles' && (
+                    <div className="space-y-6 max-w-5xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Makale Yönetimi <span className="text-sm font-normal text-muted-foreground">({articles.length} makale)</span></h1>
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left">Başlık</th>
+                                        <th className="px-4 py-3 text-left">Tarih</th>
+                                        <th className="px-4 py-3 text-right">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {articles.map(a => (
+                                        <tr key={a.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium max-w-sm truncate">
+                                                <a href={`/article/${a.id}`} target="_blank" className="hover:text-primary transition-colors">{a.title}</a>
+                                            </td>
+                                            <td className="px-4 py-3 text-muted-foreground">{formatDate(a.created_at)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteArticle, a.id, `"${a.title}" makalesini silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {articles.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">Henüz makale yok.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
             </main>
         </div>
     )
