@@ -30,12 +30,10 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                             <Menu className="h-6 w-6" />
                         </button>
 
-                        <Link href="/" className="flex items-center gap-2 group">
-                            {/* Asterisk İkonu */}
-                            <div className="text-primary font-bold text-2xl transform transition-transform group-hover:scale-110">
-                                *
+                        <Link href="/" className="flex items-center group">
+                            <div className="border-2 border-primary bg-black px-3 py-1 rounded-sm transition-opacity group-hover:opacity-80">
+                                <span className="font-bold text-lg tracking-tight text-white lowercase">tahkiye</span>
                             </div>
-                            <span className="font-bold text-xl tracking-tight text-foreground dark:text-primary">tahkiye</span>
                         </Link>
                     </div>
 
