@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut, LayoutGrid } from "lucide-react"
@@ -148,6 +149,12 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
 
             {/* Main */}
             <main className="flex-1 p-6 overflow-y-auto">
+
+                <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                    <p className="text-xs text-muted-foreground italic">
+                        <span className="font-bold text-primary">Not:</span> Yaptığınız değişiklikler (Kategori, Reklam vb.) anlık olarak sisteme kaydedilir. Eğer sitede hemen göremiyorsanız lütfen 30 saniye sonra sayfayı yenileyiniz.
+                    </p>
+                </div>
 
                 {/* === ÜYELER === */}
                 {activeTab === 'users' && (
@@ -340,6 +347,8 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                                     <select name="position" defaultValue="sidebar" className="h-10 rounded-md border border-input bg-background px-3 text-sm">
                                         <option value="sidebar">Yan Menü</option>
                                         <option value="content">İçerik Arası</option>
+                                        <option value="top">Sayfa Üstü (Top)</option>
+                                        <option value="bottom">Sayfa Altı (Bottom)</option>
                                     </select>
                                 </div>
                                 <Input name="image_url" placeholder="Görsel URL" />

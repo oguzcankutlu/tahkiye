@@ -6,9 +6,9 @@ import { Sidebar } from "./Sidebar"
 import { X } from "lucide-react"
 
 import { Footer } from "./Footer"
-
 import { RightSidebar } from "./RightSidebar"
 import { usePathname } from "next/navigation"
+import { AdSection } from "./AdSection"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
@@ -31,6 +31,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1 min-h-screen">
             <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
+
+            {/* Sayfa Üstü Reklam */}
+            <AdSection position="top" className="mt-4" />
 
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
@@ -78,6 +81,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                 </aside>
             </main>
+
+            {/* Sayfa Altı Reklam */}
+            <AdSection position="bottom" className="mb-8" />
 
             <Footer />
         </div>

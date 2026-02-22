@@ -41,8 +41,8 @@ export async function createCategory(formData: FormData) {
     const { error } = await supabase.from('categories').insert({ title, slug })
     if (error) return { error: error.message }
 
+    revalidatePath('/', 'layout')
     revalidatePath('/admin')
-    revalidatePath('/')
     return { success: true }
 }
 
@@ -151,6 +151,7 @@ export async function createAd(formData: FormData) {
     const { error } = await supabase.from('ads').insert({ title, image_url, link_url, position, is_active: true })
     if (error) return { error: error.message }
 
+    revalidatePath('/', 'layout')
     revalidatePath('/admin')
     return { success: true }
 }
