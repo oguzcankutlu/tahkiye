@@ -32,9 +32,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1 min-h-screen">
             <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-            {/* Sayfa Üstü Reklam */}
-            <AdSection position="top" className="mt-4" />
-
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div
@@ -83,9 +80,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </aside>
                 )}
             </main>
-
-            {/* Sayfa Altı Reklam */}
-            <AdSection position="bottom" className="mb-8" />
 
             <Footer />
         </div>
