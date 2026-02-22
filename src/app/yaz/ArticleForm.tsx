@@ -37,6 +37,21 @@ export function ArticleForm({
     function removeVideo(i: number) { setRelatedVideos(prev => prev.filter((_, idx) => idx !== i)) }
     function updateVideo(i: number, field: keyof RelatedLink, value: string) {
         setRelatedVideos(prev => prev.map((v, idx) => idx === i ? { ...v, [field]: value } : v))
+
+        if (field === 'url' && value.includes('http')) {
+            fetch(`/api/video-info?url=${encodeURIComponent(value)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.title) {
+                        setRelatedVideos(prev => {
+                            const next = [...prev]
+                            if (!next[i].title) next[i].title = data.title;
+                            return next;
+                        })
+                    }
+                })
+                .catch(() => { })
+        }
     }
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {

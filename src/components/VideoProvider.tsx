@@ -1,9 +1,11 @@
 "use client"
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react"
-import dynamic from "next/dynamic"
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false }) as any
-import { X } from "lucide-react"
+import ReactPlayer from "react-player"
+// @ts-ignore
+import { X, Loader2 } from "lucide-react"
+
+const Player = ReactPlayer as any;
 
 interface VideoContextType {
     playVideo: (url: string, title?: string) => void
@@ -92,7 +94,7 @@ export function VideoProvider({ children }: { children: ReactNode }) {
                         <div className="relative w-full pb-[56.25%] bg-black">
                             <div className="absolute inset-0 flex items-center justify-center">
                                 {currentVideoUrl && (
-                                    <ReactPlayer
+                                    <Player
                                         url={currentVideoUrl}
                                         width="100%"
                                         height="100%"

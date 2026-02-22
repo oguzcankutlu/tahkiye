@@ -128,7 +128,6 @@ export async function submitArticle(prevState: any, formData: FormData) {
             title: v.title || new_topic_title || "Yeni Video",
             video_url: v.url,
             thumbnail_url: "",
-            category: "Girdi Videosu",
             topic_id: topic_id
         }))
 
@@ -201,7 +200,6 @@ export async function updateArticle(prevState: any, formData: FormData) {
                 title: v.title || "Yeni Girdi Videosu",
                 video_url: v.url,
                 thumbnail_url: "",
-                category: "Girdi Videosu",
                 topic_id: article.topic_id
             }))
 

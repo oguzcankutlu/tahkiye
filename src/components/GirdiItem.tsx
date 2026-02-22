@@ -66,7 +66,24 @@ export function GirdiItem({
 
     const addVideo = () => setVideos([...videos, { title: "", url: "" }])
     const removeVideo = (i: number) => setVideos(videos.filter((_, idx) => idx !== i))
-    const updateVideoField = (i: number, f: keyof RelatedLink, v: string) => setVideos(videos.map((vid, idx) => idx === i ? { ...vid, [f]: v } : vid))
+    const updateVideoField = (i: number, f: keyof RelatedLink, v: string) => {
+        setVideos(videos.map((vid, idx) => idx === i ? { ...vid, [f]: v } : vid))
+
+        if (f === 'url' && v.includes('http')) {
+            fetch(`/api/video-info?url=${encodeURIComponent(v)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.title) {
+                        setVideos(prev => {
+                            const next = [...prev]
+                            if (!next[i].title) next[i].title = data.title;
+                            return next;
+                        })
+                    }
+                })
+                .catch(() => { })
+        }
+    }
 
     async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
