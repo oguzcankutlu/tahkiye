@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { updateProfile } from "./actions"
@@ -12,31 +12,39 @@ interface Profile {
     bio?: string | null
 }
 
-const initialState = { error: null as string | null, success: false }
-
 export function SettingsForm({ profile }: { profile: Profile }) {
-    const [state, formAction, isPending] = useActionState(async (prevState: typeof initialState, formData: FormData) => {
-        const result = await updateProfile(prevState, formData)
-        return { error: result.error || null, success: result.success || false }
-    }, initialState)
+    const [error, setError] = useState<string | null>(null)
+    const [success, setSuccess] = useState(false)
+    const [isPending, startTransition] = useTransition()
 
-    useEffect(() => {
-        if (state.success) {
-            alert("Profil başarıyla güncellendi!")
-        }
-    }, [state.success])
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setError(null)
+        setSuccess(false)
+        startTransition(async () => {
+            const result = await updateProfile(null, formData)
+            if (result?.error) setError(result.error)
+            else setSuccess(true)
+        })
+    }
 
     return (
-        <form action={formAction} className="space-y-6 max-w-2xl">
-            {state.error && (
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+            {error && (
                 <div className="p-4 rounded-md bg-destructive/15 text-destructive font-medium border border-destructive/30">
-                    {state.error}
+                    {error}
+                </div>
+            )}
+            {success && (
+                <div className="p-4 rounded-md bg-green-500/15 text-green-600 dark:text-green-400 font-medium border border-green-500/30">
+                    Profil başarıyla güncellendi!
                 </div>
             )}
 
             <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                    Kullanıcı Adı (Okunabilir Değil, Değiştirilemez)
+                    Kullanıcı Adı (Değiştirilemez)
                 </label>
                 <Input
                     value={profile.username}
@@ -60,7 +68,7 @@ export function SettingsForm({ profile }: { profile: Profile }) {
 
             <div>
                 <label htmlFor="avatar_url" className="block text-sm font-medium text-muted-foreground mb-1.5">
-                    Profil Fotoğrafı URL (Avatar)
+                    Profil Fotoğrafı URL
                 </label>
                 <Input
                     id="avatar_url"
@@ -72,14 +80,14 @@ export function SettingsForm({ profile }: { profile: Profile }) {
 
             <div>
                 <label htmlFor="bio" className="block text-sm font-medium text-muted-foreground mb-1.5">
-                    Biyografi (Hakkında)
+                    Biyografi
                 </label>
                 <textarea
                     id="bio"
                     name="bio"
                     defaultValue={profile.bio || ""}
                     className="w-full flex min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
-                    placeholder="Kendinizden veya ilgi alanlarınızdan biraz bahsedin..."
+                    placeholder="Kendinizden biraz bahsedin..."
                 />
             </div>
 

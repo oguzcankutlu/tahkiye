@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useActionState, useEffect } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Link2, Users, FileText, Image, Layout, LogOut, PlusCircle } from "lucide-react"
+import { Users, FileText, Image, Layout, LogOut, PlusCircle } from "lucide-react"
 import { createTopic, createVideo } from "./actions"
 
 type Tab = 'users' | 'content' | 'ads' | 'pages'
@@ -14,32 +14,38 @@ interface Topic {
     slug: string
 }
 
-const initialState = { error: null as string | null, success: false }
-
-// Mock verileri hala görsel olarak tutuyoruz ki site boş görünmesin, 
-// CMS admini sonradan veritabanı okuyacak şekilde bunları geliştirebilir.
-const MOCK_USERS = [
-    { id: 1, username: 'ahmet-erdem', email: 'ahmet@test.com', status: 'pending', joined: '12.02.2026' },
-]
-
 export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
-    const [activeTab, setActiveTab] = useState<Tab>('content') // Yeni İçerik eklemeyi öne çıkar
+    const [activeTab, setActiveTab] = useState<Tab>('content')
 
-    const [topicState, topicAction, isTopicPending] = useActionState(async (state: typeof initialState, formData: FormData) => {
-        const result = await createTopic(formData)
-        return { error: result.error || null, success: result.success || false }
-    }, initialState)
+    const [topicError, setTopicError] = useState<string | null>(null)
+    const [topicSuccess, setTopicSuccess] = useState(false)
+    const [isTopicPending, startTopicTransition] = useTransition()
 
-    const [videoState, videoAction, isVideoPending] = useActionState(async (state: typeof initialState, formData: FormData) => {
-        const result = await createVideo(formData)
-        return { error: result.error || null, success: result.success || false }
-    }, initialState)
+    const [videoError, setVideoError] = useState<string | null>(null)
+    const [videoSuccess, setVideoSuccess] = useState(false)
+    const [isVideoPending, startVideoTransition] = useTransition()
 
-    // Alert clear
-    useEffect(() => {
-        if (topicState.success) alert("Konu başarıyla eklendi!")
-        if (videoState.success) alert("Video başarıyla eklendi!")
-    }, [topicState.success, videoState.success])
+    function handleTopicSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setTopicError(null); setTopicSuccess(false)
+        startTopicTransition(async () => {
+            const result = await createTopic(formData)
+            if (result?.error) setTopicError(result.error)
+            else { setTopicSuccess(true); (e.target as HTMLFormElement).reset() }
+        })
+    }
+
+    function handleVideoSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setVideoError(null); setVideoSuccess(false)
+        startVideoTransition(async () => {
+            const result = await createVideo(formData)
+            if (result?.error) setVideoError(result.error)
+            else { setVideoSuccess(true); (e.target as HTMLFormElement).reset() }
+        })
+    }
 
     return (
         <div className="flex min-h-[calc(100vh-64px)] w-full bg-background text-foreground">
@@ -97,8 +103,9 @@ export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
                                 <PlusCircle className="h-5 w-5 text-primary" />
                                 Yeni Ana Konu Ekle
                             </h2>
-                            <form action={topicAction} className="space-y-4">
-                                {topicState.error && <p className="text-sm text-destructive">{topicState.error}</p>}
+                            <form onSubmit={handleTopicSubmit} className="space-y-4">
+                                {topicError && <p className="text-sm text-destructive">{topicError}</p>}
+                                {topicSuccess && <p className="text-sm text-green-500">Konu başarıyla eklendi!</p>}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-muted-foreground mb-1">Görünür Başlık</label>
@@ -127,8 +134,9 @@ export default function AdminDashboardClient({ topics }: { topics: Topic[] }) {
                                 <PlusCircle className="h-5 w-5 text-primary" />
                                 Yeni Video Ekle
                             </h2>
-                            <form action={videoAction} className="space-y-4">
-                                {videoState.error && <p className="text-sm text-destructive">{videoState.error}</p>}
+                            <form onSubmit={handleVideoSubmit} className="space-y-4">
+                                {videoError && <p className="text-sm text-destructive">{videoError}</p>}
+                                {videoSuccess && <p className="text-sm text-green-500">Video başarıyla eklendi!</p>}
                                 <div>
                                     <label className="block text-sm font-medium text-muted-foreground mb-1">Video Başlığı</label>
                                     <Input name="title" required placeholder="YouTube'daki tam başlık..." className="bg-background" />

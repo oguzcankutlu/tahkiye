@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { submitArticle } from "./actions"
 
@@ -9,16 +9,25 @@ interface Topic {
     title: string
 }
 
-const initialState = { error: null }
-
 export function ArticleForm({ topics }: { topics: Topic[] }) {
-    const [state, formAction, isPending] = useActionState(submitArticle, initialState)
+    const [error, setError] = useState<string | null>(null)
+    const [isPending, startTransition] = useTransition()
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setError(null)
+        startTransition(async () => {
+            const result = await submitArticle(null, formData)
+            if (result?.error) setError(result.error)
+        })
+    }
 
     return (
-        <form action={formAction} className="space-y-6">
-            {state?.error && (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
                 <div className="p-4 rounded-md bg-destructive/15 text-destructive font-medium border border-destructive/30">
-                    {state.error}
+                    {error}
                 </div>
             )}
 

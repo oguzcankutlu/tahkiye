@@ -2,6 +2,15 @@ import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
 
+interface ArticleWithAuthor {
+    id: string
+    title: string
+    content: string
+    created_at: string
+    read_time: number
+    author: { username: string; full_name: string | null; avatar_url: string | null } | { username: string; full_name: string | null; avatar_url: string | null }[] | null
+}
+
 export default async function TopicPage({
     params,
 }: {
@@ -24,7 +33,7 @@ export default async function TopicPage({
     }
 
     // 2. Fetch all articles related to this topic
-    const { data: articles, error: articlesError } = await supabase
+    const { data: rawArticles } = await supabase
         .from("articles")
         .select(`
             id, title, content, created_at, read_time,
@@ -32,6 +41,9 @@ export default async function TopicPage({
         `)
         .eq('topic_id', topic.id)
         .order('created_at', { ascending: false })
+
+    const articles = (rawArticles || []) as ArticleWithAuthor[]
+
 
     return (
         <div className="w-full pb-20">
