@@ -75,11 +75,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 {/* Sağ Sütun (w-1/4 veya max-w-xs) - Video Listesi */}
-                <aside className="hidden xl:block w-1/4 max-w-xs shrink-0">
-                    <div className="sticky top-24 h-[calc(100vh-8rem)]">
-                        <RightSidebar />
-                    </div>
-                </aside>
+                {!pathname?.startsWith('/videolar') && (
+                    <aside className="hidden xl:block w-1/4 max-w-xs shrink-0">
+                        <div className="sticky top-24 h-[calc(100vh-8rem)]">
+                            <RightSidebar />
+                        </div>
+                    </aside>
+                )}
             </main>
 
             {/* Sayfa Altı Reklam */}

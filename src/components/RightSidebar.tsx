@@ -16,9 +16,11 @@ interface Video {
     topic: {
         id: string
         title: string
+        slug: string
     } | {
         id: string
         title: string
+        slug: string
     }[]
 }
 
@@ -35,7 +37,7 @@ export function RightSidebar() {
                 .from('videos')
                 .select(`
                     id, title, video_url, duration, thumbnail_url,
-                    topic:topics ( id, title )
+                    topic:topics ( id, title, slug )
                 `)
                 .order('created_at', { ascending: false })
                 .limit(5)
@@ -45,7 +47,6 @@ export function RightSidebar() {
             }
             setIsLoading(false)
         }
-
         fetchVideos()
 
         // Listen for new videos added anywhere in the app
@@ -116,7 +117,7 @@ export function RightSidebar() {
                         </button>
 
                         <div className="mt-auto">
-                            <Link href={`/topic/${Array.isArray(video.topic) ? video.topic[0]?.id : video.topic?.id}`} className="text-xs font-medium text-primary hover:underline line-clamp-1">
+                            <Link href={`/topic/${Array.isArray(video.topic) ? video.topic[0]?.slug : video.topic?.slug}`} className="text-xs font-medium text-primary hover:underline line-clamp-1">
                                 Konu: {Array.isArray(video.topic) ? video.topic[0]?.title : video.topic?.title}
                             </Link>
                         </div>

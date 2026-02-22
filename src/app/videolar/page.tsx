@@ -12,7 +12,7 @@ export default async function VideolarPage() {
         .from('videos')
         .select(`
             id, title, video_url, duration, thumbnail_url,
-            topic:topics ( id, title )
+            topic:topics ( id, title, slug )
         `)
         .order('created_at', { ascending: false })
 
@@ -37,14 +37,26 @@ export default async function VideolarPage() {
 
     return (
         <div className="flex-1 pt-6 pb-20 w-full">
-            {/* Header Bölümü */}
-            <div className="mb-8 border-b border-border/40 pb-6">
-                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                    Video Kütüphanesi
-                </h1>
-                <p className="text-muted-foreground mt-2 text-sm max-w-2xl">
-                    Varoluşsal sorgulamalar, minimalist yaşam pratikleri ve modernite eleştirileri üzerine hazırlanmış derinlemesine analiz videoları.
-                </p>
+            {/* Premium Header Bölümü */}
+            <div className="relative mb-12 rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/50 via-background to-background border border-border/50 p-8 sm:p-12 shadow-sm">
+                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                    <svg className="w-64 h-64 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                </div>
+                <div className="relative z-10 max-w-3xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4 border border-primary/20">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        </span>
+                        Tahkiye Orijinal İçerikleri
+                    </div>
+                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+                        Video Kütüphanesi
+                    </h1>
+                    <p className="text-lg text-muted-foreground/90 leading-relaxed max-w-2xl">
+                        Varoluşsal sorgulamalar, minimalist yaşam pratikleri ve modernite eleştirileri üzerine hazırlanmış, derinlemesine analiz ve ufuk açıcı video arşivi.
+                    </p>
+                </div>
             </div>
 
             {/* Client-side Video Grid Yapısı */}
