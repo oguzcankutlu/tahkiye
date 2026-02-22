@@ -49,20 +49,15 @@ export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
                                 )}
                             </div>
                             {/* Video Info */}
-                            <div className="mt-3 flex gap-3">
-                                <div className="w-9 h-9 shrink-0 rounded-full bg-secondary overflow-hidden border border-border flex items-center justify-center font-bold text-muted-foreground text-xs mt-0.5">
-                                    <Play className="h-4 w-4" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                                        {video.title}
-                                    </h3>
-                                    <span className="text-xs text-muted-foreground/80 mt-1">Tahkiye Medya</span>
-                                </div>
+                            <div className="mt-3">
+                                <h3 className="text-base font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                                    {video.title}
+                                </h3>
+                                <div className="text-xs text-muted-foreground/80 mt-1">Tahkiye Medya</div>
                             </div>
                         </button>
 
-                        <div className="mt-auto pl-12">
+                        <div className="mt-auto">
                             {topicId ? (
                                 <Link href={`/topic/${topicId}`} className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors line-clamp-1 w-max max-w-full">
                                     {topicTitle}

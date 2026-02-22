@@ -48,14 +48,8 @@ export default async function VideolarPage() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                         </span>
-                        Tahkiye Orijinal İçerikleri
+                        Tahkiye Video Kütüphanesi
                     </div>
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
-                        Video Kütüphanesi
-                    </h1>
-                    <p className="text-lg text-muted-foreground/90 leading-relaxed max-w-2xl">
-                        Varoluşsal sorgulamalar, minimalist yaşam pratikleri ve modernite eleştirileri üzerine hazırlanmış, derinlemesine analiz ve ufuk açıcı video arşivi.
-                    </p>
                 </div>
             </div>
 
