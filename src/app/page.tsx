@@ -36,5 +36,7 @@ export default async function Home() {
     .neq('id', latestArticle.id)
     .limit(3)
 
-  return <Feed article={latestArticle as any} relatedArticles={relatedArticles || []} />
+  const { data: { user } } = await supabase.auth.getUser()
+
+  return <Feed article={latestArticle as any} relatedArticles={relatedArticles || []} currentUserId={user?.id} />
 }
