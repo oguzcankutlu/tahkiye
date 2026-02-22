@@ -14,10 +14,10 @@
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 10%;
 
-  --primary: 54 98% 48%;
-  /* #F2C900 - Yellow (Vibrant) */
-  --primary-foreground: 0 0% 0%;
-  /* Black text on Yellow */
+  --primary: 45 93% 47%;
+  /* #EAB308 - Premium Yellow */
+  --primary-foreground: 0 0% 10%;
+  /* Dark text on Yellow */
 
   --secondary: 0 0% 92%;
   --secondary-foreground: 0 0% 10%;
@@ -25,16 +25,16 @@
   --muted: 0 0% 94%;
   --muted-foreground: 0 0% 40%;
 
-  --accent: 54 98% 48%;
+  --accent: 45 93% 47%;
   /* Yellow Accent */
-  --accent-foreground: 0 0% 0%;
+  --accent-foreground: 0 0% 10%;
 
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
 
   --border: 0 0% 88%;
   --input: 0 0% 88%;
-  --ring: 54 98% 48%;
+  --ring: 45 93% 47%;
   /* Yellow Ring */
 
   --radius: 0.2rem;
@@ -52,9 +52,9 @@
   --popover: 0 0% 12%;
   --popover-foreground: 0 0% 95%;
 
-  --primary: 54 98% 48%;
+  --primary: 45 93% 47%;
   /* Same Yellow */
-  --primary-foreground: 0 0% 0%;
+  --primary-foreground: 0 0% 10%;
 
   --secondary: 0 0% 18%;
   --secondary-foreground: 0 0% 95%;
@@ -62,15 +62,15 @@
   --muted: 0 0% 18%;
   --muted-foreground: 0 0% 60%;
 
-  --accent: 54 98% 48%;
-  --accent-foreground: 0 0% 0%;
+  --accent: 45 93% 47%;
+  --accent-foreground: 0 0% 10%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 95%;
 
   --border: 0 0% 20%;
   --input: 0 0% 20%;
-  --ring: 54 98% 48%;
+  --ring: 45 93% 47%;
 }
 
 body {

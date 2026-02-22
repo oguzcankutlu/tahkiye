@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { signup } from "@/app/auth/actions/auth-actions"
 
 // Turkish cities sorted by population (approximate order for major ones, rest typical)
@@ -23,7 +23,7 @@ const initialState: { error: string | null } = {
 }
 
 export default function RegisterPage() {
-    const [state, formAction] = useFormState(signup, initialState)
+    const [state, formAction] = useActionState(signup, initialState)
 
     return (
         <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -74,20 +74,6 @@ export default function RegisterPage() {
                             />
                         </div>
 
-                        {/* Telefon (SMS Onayı için) */}
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-muted-foreground mb-1">
-                                Telefon Numarası <span className="text-xs text-muted-foreground/60">(SMS onayı gereklidir)</span>
-                            </label>
-                            <Input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                required
-                                placeholder="5XX XXX XX XX"
-                            />
-                        </div>
-
                         {/* Şehir Seçimi */}
                         <div>
                             <label htmlFor="city" className="block text-sm font-medium text-muted-foreground mb-1">
@@ -96,10 +82,11 @@ export default function RegisterPage() {
                             <select
                                 id="city"
                                 name="city"
+                                defaultValue=""
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 required
                             >
-                                <option value="" disabled selected>Şehir Seçiniz</option>
+                                <option value="" disabled>Şehir Seçiniz</option>
                                 {CITIES.map((city) => (
                                     <option key={city} value={city}>{city}</option>
                                 ))}
@@ -125,7 +112,7 @@ export default function RegisterPage() {
                             </label>
                             <Input
                                 id="password-confirm"
-                                name="password-confirm"
+                                name="confirmPassword"
                                 type="password"
                                 required
                                 placeholder="Şifrenizi tekrar girin"
@@ -138,7 +125,7 @@ export default function RegisterPage() {
                             Kayıt olarak <Link href="/rules" className="underline">kullanıcı sözleşmesini</Link> kabul etmiş olursunuz.
                         </p>
                         <Button className="w-full" type="submit">
-                            Kayıt Ol ve Doğrulamaya Geç
+                            Kayıt Ol
                         </Button>
                     </div>
                 </form>

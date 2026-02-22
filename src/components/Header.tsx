@@ -1,0 +1,99 @@
+import Link from "next/link"
+import { ThemeToggle } from "./ThemeToggle"
+import { Menu, PlaySquare, X, User, Search } from "lucide-react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState("")
+    const router = useRouter()
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (searchQuery.trim()) {
+            router.push(`/arama?q=${encodeURIComponent(searchQuery.trim())}`)
+            setIsSearchOpen(false)
+            setSearchQuery("")
+        }
+    }
+    return (
+        <>
+            <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="w-full h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            className="xl:hidden p-2 -ml-2 text-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md"
+                            onClick={onMenuClick}
+                            aria-label="Open Menu"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
+
+                        <Link href="/" className="flex items-center gap-2 group">
+                            {/* Asterisk İkonu */}
+                            <div className="text-primary font-bold text-2xl transform transition-transform group-hover:scale-110">
+                                *
+                            </div>
+                            <span className="font-bold text-xl tracking-tight text-foreground dark:text-primary">tahkiye</span>
+                        </Link>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsSearchOpen(!isSearchOpen)}
+                            className={`p-2 rounded-md transition-colors ${isSearchOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'}`}
+                            aria-label="Arama"
+                        >
+                            <Search className="h-5 w-5" />
+                        </button>
+
+                        <Link
+                            href="/videolar"
+                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-md transition-colors"
+                            aria-label="Videolar"
+                        >
+                            <PlaySquare className="h-5 w-5" />
+                        </Link>
+                        <ThemeToggle />
+
+                        <div className="h-6 w-px bg-border/50 mx-1 hidden sm:block" />
+
+                        <Link
+                            href="/login"
+                            className="p-2 text-primary hover:text-primary/80 hover:bg-secondary/40 rounded-md transition-colors flex items-center justify-center"
+                            aria-label="Giriş Yap / Kayıt Ol"
+                        >
+                            <User className="h-5 w-5" />
+                        </Link>
+                    </div>
+                </div>
+            </header>
+
+            {/* Arama Çubuğu */}
+            {isSearchOpen && (
+                <div className="absolute top-16 left-0 w-full bg-background border-b border-border/40 p-4 shadow-lg z-40 animate-in slide-in-from-top-2">
+                    <form onSubmit={handleSearch} className="max-w-3xl mx-auto flex gap-2">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <input
+                                autoFocus
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Konu, girdi veya yazar ara..."
+                                className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-transparent text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="h-10 px-4 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+                        >
+                            Ara
+                        </button>
+                    </form>
+                </div>
+            )}
+        </>
+    )
+}
