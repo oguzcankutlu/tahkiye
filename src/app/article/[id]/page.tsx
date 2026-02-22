@@ -38,5 +38,5 @@ export default async function ArticlePage({
         .neq('id', article.id)
         .limit(3)
 
-    return <Feed article={article} relatedArticles={relatedArticles || []} />
+    return <Feed article={article as any} relatedArticles={relatedArticles || []} />
 }

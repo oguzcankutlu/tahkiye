@@ -2,17 +2,28 @@ import { Play } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 
+interface VideoWithTopic {
+    id: string
+    title: string
+    video_url: string
+    duration: string | null
+    thumbnail_url: string | null
+    topic: { id: string; title: string } | { id: string; title: string }[] | null
+}
+
 export default async function VideolarPage() {
     const supabase = await createClient()
 
     // Fetch all videos from Supabase
-    const { data: videos, error } = await supabase
+    const { data: rawVideos, error } = await supabase
         .from('videos')
         .select(`
             id, title, video_url, duration, thumbnail_url,
             topic:topics ( id, title )
         `)
         .order('created_at', { ascending: false })
+
+    const videos = (rawVideos || []) as VideoWithTopic[]
 
     if (error) {
         return (

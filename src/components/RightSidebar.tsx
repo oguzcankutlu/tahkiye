@@ -37,7 +37,7 @@ export function RightSidebar() {
                 .limit(5)
 
             if (data && !error) {
-                setVideos(data)
+                setVideos(data as Video[])
             }
             setIsLoading(false)
         }

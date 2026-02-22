@@ -36,5 +36,5 @@ export default async function Home() {
     .neq('id', latestArticle.id)
     .limit(3)
 
-  return <Feed article={latestArticle} relatedArticles={relatedArticles || []} />
+  return <Feed article={latestArticle as any} relatedArticles={relatedArticles || []} />
 }
