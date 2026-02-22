@@ -23,17 +23,24 @@ export async function updateProfile(prevState: any, formData: FormData) {
         return { error: 'Profil bulunamadı.' }
     }
 
+    const username = formData.get('username') as string
     const full_name = formData.get('full_name') as string
     const avatar_url = formData.get('avatar_url') as string
     const bio = formData.get('bio') as string
+
+    if (username && username !== profile.username) {
+        // Check uniqueness
+        const { data: existing } = await supabase.from('profiles').select('id').eq('username', username).neq('id', user.id).single()
+        if (existing) return { error: 'Bu kullanıcı adı zaten alınmış.' }
+    }
 
     // 2. Profil Güncelleme
     const { error } = await supabase
         .from('profiles')
         .update({
+            ...(username ? { username } : {}),
             full_name,
             avatar_url,
-            // Eğer Supabase tablonda 'bio' kolonu yoksa, bu satırı sil veya veritabanına ekle.
             ...(bio ? { bio } : {})
         })
         .eq('id', user.id)

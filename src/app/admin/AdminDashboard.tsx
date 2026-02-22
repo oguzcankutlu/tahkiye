@@ -89,9 +89,9 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
 
     const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
         { key: 'users', label: 'Üyeler', icon: <Users className="h-4 w-4" />, count: profiles.length },
-        { key: 'topics', label: 'Konular', icon: <Tag className="h-4 w-4" />, count: topics.length },
+        { key: 'topics', label: 'Kategoriler', icon: <Tag className="h-4 w-4" />, count: topics.length },
         { key: 'videos', label: 'Videolar', icon: <Video className="h-4 w-4" />, count: videos.length },
-        { key: 'articles', label: 'Makaleler', icon: <FileText className="h-4 w-4" />, count: articles.length },
+        { key: 'articles', label: 'Konular', icon: <FileText className="h-4 w-4" />, count: articles.length },
         { key: 'ads', label: 'Reklamlar', icon: <span className="text-sm">📢</span>, count: ads.length },
     ]
 
@@ -166,11 +166,11 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                 {/* === KONULAR === */}
                 {activeTab === 'topics' && (
                     <div className="space-y-6 max-w-4xl">
-                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Konu Yönetimi</h1>
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Kategori Yönetimi</h1>
 
                         {/* Yeni Konu Ekle */}
                         <div className="p-5 border border-border/40 rounded-xl bg-card">
-                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Konu Ekle</h2>
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Kategori Ekle</h2>
                             <form onSubmit={handleTopicSubmit} className="space-y-3">
                                 {topicError && <p className="text-sm text-destructive">{topicError}</p>}
                                 {topicSuccess && <p className="text-sm text-green-500">Konu eklendi! Sayfayı yenile.</p>}
@@ -273,7 +273,7 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                 {/* === MAKALELEr === */}
                 {activeTab === 'articles' && (
                     <div className="space-y-6 max-w-5xl">
-                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Makale Yönetimi <span className="text-sm font-normal text-muted-foreground">({articles.length} makale)</span></h1>
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Konu Yönetimi <span className="text-sm font-normal text-muted-foreground">({articles.length} konu)</span></h1>
                         <div className="border border-border/40 rounded-lg overflow-hidden">
                             <table className="w-full text-sm">
                                 <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">

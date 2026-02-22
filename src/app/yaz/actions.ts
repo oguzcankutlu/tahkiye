@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
 export async function submitArticle(prevState: any, formData: FormData) {
     const supabase = await createClient()
@@ -56,6 +57,7 @@ export async function submitArticle(prevState: any, formData: FormData) {
 
     // 5. Başarılı ise makalenin sayfasına yönlendir
     if (newArticle?.id) {
+        revalidatePath('/', 'layout')
         redirect(`/article/${newArticle.id}`)
     }
 

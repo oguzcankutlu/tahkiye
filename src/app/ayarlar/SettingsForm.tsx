@@ -43,15 +43,16 @@ export function SettingsForm({ profile }: { profile: Profile }) {
             )}
 
             <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                    Kullanıcı Adı (Değiştirilemez)
+                <label htmlFor="username" className="block text-sm font-medium text-muted-foreground mb-1.5">
+                    Kullanıcı Adı
                 </label>
                 <Input
-                    value={profile.username}
-                    readOnly
-                    disabled
-                    className="bg-secondary/50 text-muted-foreground cursor-not-allowed"
+                    id="username"
+                    name="username"
+                    defaultValue={profile.username}
+                    placeholder="kullanici_adi"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Sadece harf, rakam ve alt çizgi kullanabilirsiniz.</p>
             </div>
 
             <div>
