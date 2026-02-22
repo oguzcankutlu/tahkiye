@@ -37,7 +37,15 @@ export function AdSection({ position, className = "" }: { position: string; clas
     }, [position])
 
     if (loading) return null
-    if (!ad) return null
+    if (!ad) {
+        return (
+            <div className={`w-full ${className}`}>
+                <div className="w-full h-24 bg-secondary/30 rounded-lg border border-dashed border-border flex items-center justify-center text-muted-foreground text-sm">
+                    Reklam Alanı ({position === 'top' ? 'Üst' : position === 'bottom' ? 'Alt' : position})
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className={`w-full ${className}`}>
