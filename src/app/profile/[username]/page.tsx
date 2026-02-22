@@ -3,6 +3,15 @@ import Link from "next/link"
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
 
+interface ArticleWithTopic {
+    id: string
+    title: string
+    content: string
+    created_at: string
+    read_time: number
+    topic: { id: string; title: string; slug: string } | { id: string; title: string; slug: string }[] | null
+}
+
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
     const resolvedParams = await params
     const decodedUsername = decodeURIComponent(resolvedParams.username)
@@ -21,7 +30,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     }
 
     // 2. Fetch all Articles published by this Profile
-    const { data: articles } = await supabase
+    const { data: rawArticles } = await supabase
         .from('articles')
         .select(`
             id, title, content, created_at, read_time,
@@ -29,6 +38,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         `)
         .eq('author_id', profile.id)
         .order('created_at', { ascending: false })
+
+    const articles = (rawArticles || []) as ArticleWithTopic[]
 
     const totalArticles = articles?.length || 0
     const totalReadsMock = Math.floor(Math.random() * 5000) + 1200 // Mocking views for now
