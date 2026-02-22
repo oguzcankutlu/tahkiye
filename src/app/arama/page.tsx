@@ -75,7 +75,7 @@ export default async function AramaPage({
                                             Konu: {topicTitle}
                                         </Link>
                                         <span className="text-muted-foreground/50">•</span>
-                                        <span className="text-muted-foreground">Yazar: {authorName}</span>
+                                        <Link href={`/profile/${Array.isArray(article.author) ? article.author[0]?.username : article.author?.username}`} className="text-muted-foreground hover:text-primary hover:underline transition-colors">Yazar: {authorName}</Link>
                                     </div>
                                 </div>
                             )

@@ -103,10 +103,10 @@ export default async function TopicPage({
 
                                 <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border">
+                                        <Link href={`/profile/${Array.isArray(article.author) ? article.author[0]?.username : article.author?.username}`} className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground border border-border hover:border-primary transition-colors">
                                             {initialLetter}
-                                        </div>
-                                        <span className="text-xs font-medium text-foreground">{authorName}</span>
+                                        </Link>
+                                        <Link href={`/profile/${Array.isArray(article.author) ? article.author[0]?.username : article.author?.username}`} className="text-xs font-medium text-foreground hover:text-primary hover:underline transition-colors">{authorName}</Link>
                                         <span className="text-muted-foreground/50 text-xs">•</span>
                                         <span className="text-xs text-muted-foreground">{formattedDate}</span>
                                     </div>
