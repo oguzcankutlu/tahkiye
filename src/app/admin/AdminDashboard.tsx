@@ -127,6 +127,12 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                     <span className="font-bold text-base tracking-tight">tahkiye <span className="text-primary text-xs font-normal">Yönetici</span></span>
                 </div>
                 <nav className="flex-1 p-3 flex flex-col gap-1">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary/60 text-muted-foreground mb-4 border-b border-border/10 pb-4"
+                    >
+                        <LogOut className="h-4 w-4 rotate-180" /> Siteye Dön
+                    </Link>
                     {tabs.map(tab => (
                         <button
                             key={tab.key}

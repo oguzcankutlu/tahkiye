@@ -47,8 +47,24 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     const displayName = profile.full_name || profile.username
     const initialLetter = displayName.charAt(0).toUpperCase()
 
-    // Fallback bio since we haven't added bio to DB officially, or if it's empty
-    const bioText = '"Sadeleşmek, daha azına sahip olmak değil, daha fazla yer açmaktır." Teknoloji, felsefe ve edebiyat üzerine karalamalar...'
+    // Function to render text with clickable links
+    const renderBioWithLinks = (text: string) => {
+        if (!text) return <span className="italic text-muted-foreground/60">Yazar henüz bir biyografi eklememiş.</span>
+
+        const urlRegex = /(https?:\/\/[^\s]+)/g
+        const parts = text.split(urlRegex)
+
+        return parts.map((part, i) => {
+            if (part.match(urlRegex)) {
+                return (
+                    <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+                        {part}
+                    </a>
+                )
+            }
+            return part
+        })
+    }
 
     return (
         <div className="w-full pb-20">
@@ -66,10 +82,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                     <h1 className="text-3xl font-bold text-foreground">
                         {displayName}
                     </h1>
-                    <p className="text-muted-foreground mt-2 max-w-lg">
-                        {bioText}
-                    </p>
-                    <div className="flex items-center justify-center sm:justify-start gap-6 mt-5 text-sm font-medium">
+                    <div className="text-muted-foreground mt-3 max-w-lg text-sm leading-relaxed whitespace-pre-wrap">
+                        {renderBioWithLinks(profile.bio || "")}
+                    </div>
+                    <div className="flex items-center justify-center sm:justify-start gap-6 mt-6 text-sm font-medium">
                         <div className="flex flex-col items-center sm:items-start">
                             <span className="text-foreground text-lg">{totalArticles}</span>
                             <span className="text-muted-foreground text-xs uppercase tracking-wider">Girdi</span>

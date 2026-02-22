@@ -41,7 +41,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
             ...(username ? { username } : {}),
             full_name,
             avatar_url,
-            ...(bio ? { bio } : {})
+            bio // Explicitly handle bio
         })
         .eq('id', user.id)
 

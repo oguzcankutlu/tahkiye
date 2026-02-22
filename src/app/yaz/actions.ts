@@ -146,6 +146,8 @@ export async function updateArticle(prevState: any, formData: FormData) {
 
     const id = formData.get('id') as string
     const content = formData.get('content') as string
+    const related_links = formData.get('related_links') as string || '[]'
+    const related_videos = formData.get('related_videos') as string || '[]'
 
     if (!id || !content) return { error: 'Eksik bilgi.' }
 
@@ -153,9 +155,17 @@ export async function updateArticle(prevState: any, formData: FormData) {
     const { data: article } = await supabase.from('articles').select('author_id, topic_id').eq('id', id).single()
     if (!article || article.author_id !== user.id) return { error: 'Bu girdi üzerinde düzenleme yetkiniz yok.' }
 
+    const videosArray = JSON.parse(related_videos)
+    const firstVideoUrl = videosArray[0]?.url || ""
+
     const { error } = await supabase
         .from('articles')
-        .update({ content })
+        .update({
+            content,
+            related_links,
+            related_videos,
+            video_url: firstVideoUrl // Sync main video URL with first video in list
+        })
         .eq('id', id)
 
     if (error) return { error: error.message }
