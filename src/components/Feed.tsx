@@ -29,6 +29,8 @@ interface Article {
     topic: Topic
     upvotes?: number
     downvotes?: number
+    related_links?: string | any[]
+    related_videos?: string | any[]
 }
 
 interface FeedProps {
@@ -73,6 +75,9 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
         setShowShare(false)
     }
 
+    const initialLinks = typeof article.related_links === 'string' ? JSON.parse(article.related_links || '[]') : (article.related_links || [])
+    const initialVideos = typeof article.related_videos === 'string' ? JSON.parse(article.related_videos || '[]') : (article.related_videos || [])
+
     return (
         <div className="w-full pb-20">
             {/* Üst Reklam Alanı Placeholder */}
@@ -108,6 +113,38 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
                 {/* Girdi Metni */}
                 <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-lg prose-p:mb-6">
                     <p className="whitespace-pre-wrap">{article.content}</p>
+                </div>
+
+                {/* Linkler ve Videolar */}
+                <div className="space-y-4 pt-2">
+                    {initialLinks.length > 0 && initialLinks.some((l: any) => l.url) && (
+                        <div className="p-4 bg-secondary/20 rounded-xl border border-border/40">
+                            <label className="block text-[11px] font-bold text-muted-foreground uppercase mb-3">İlgili Bağlantılar</label>
+                            <div className="flex flex-wrap gap-2">
+                                {initialLinks.filter((l: any) => l.url).map((l: any, i: number) => (
+                                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline bg-background/50 px-3 py-1.5 rounded-md border border-border/40 flex items-center gap-2" title={l.title || l.url}>
+                                        <span className="truncate max-w-[250px]">{l.title || "Bağlantı"}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {initialVideos.length > 0 && initialVideos.some((v: any) => v.url) && (
+                        <div className="p-4 bg-secondary/20 rounded-xl border border-border/40">
+                            <label className="block text-[11px] font-bold text-muted-foreground uppercase mb-3">Videolar</label>
+                            <div className="flex flex-col gap-3">
+                                {initialVideos.filter((v: any) => v.url).map((v: any, i: number) => (
+                                    <a key={`video-${i}`} href={v.url} target="_blank" rel="noopener noreferrer" className="text-base font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2.5 group w-fit" title={v.title || v.url}>
+                                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+                                        </div>
+                                        <span className="underline-offset-4 group-hover:underline line-clamp-2 leading-tight">{v.title || "Video Bağlantısı"}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* İlgili İçerikler */}

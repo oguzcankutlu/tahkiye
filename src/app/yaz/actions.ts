@@ -125,7 +125,8 @@ export async function submitArticle(prevState: any, formData: FormData) {
             title: v.title || new_topic_title || "Yeni Video",
             video_url: v.url,
             thumbnail_url: "",
-            category: "Girdi Videosu"
+            category: "Girdi Videosu",
+            topic_id: topic_id
         }))
 
         const { error: videoError } = await supabase
@@ -173,12 +174,43 @@ export async function updateArticle(prevState: any, formData: FormData) {
             content,
             related_links,
             related_videos,
-            video_url: firstVideoUrl // Sync main video URL with first video in list
+            video_url: firstVideoUrl
         })
         .eq('id', id)
 
     if (error) return { error: error.message }
 
+    // Videoları Global Kütüphaneye de Ekle (Sadece Girdi Güncellenirse)
+    if (videosArray.length > 0) {
+        // Zaten var olan videoları tekrar eklememek için URL'leri kontrol et
+        const extractedUrls = videosArray.map((v: any) => v.url)
+        const { data: existingVideos } = await supabase
+            .from('videos')
+            .select('video_url')
+            .in('video_url', extractedUrls)
+
+        const existingUrls = existingVideos?.map(v => v.video_url) || []
+
+        const newVideosToInsert = videosArray
+            .filter((v: any) => !existingUrls.includes(v.url))
+            .map((v: any) => ({
+                title: v.title || "Yeni Girdi Videosu",
+                video_url: v.url,
+                thumbnail_url: "",
+                category: "Girdi Videosu",
+                topic_id: article.topic_id
+            }))
+
+        if (newVideosToInsert.length > 0) {
+            const { error: videoError } = await supabase
+                .from('videos')
+                .insert(newVideosToInsert)
+
+            if (videoError) console.error("Video güncelleme/ekleme hatası:", videoError.message)
+        }
+    }
+
     revalidatePath('/', 'layout')
+    revalidatePath('/videolar', 'layout')
     return { success: true }
 }

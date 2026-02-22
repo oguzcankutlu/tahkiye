@@ -176,8 +176,24 @@ export function GirdiItem({
                             <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-2">İlgili Bağlantılar</label>
                             <div className="flex flex-wrap gap-2">
                                 {links.filter(l => l.url).map((l, i) => (
-                                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline bg-background/50 px-2 py-1 rounded border border-border/40">
-                                        {l.title || "Bağlantı"}
+                                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline bg-background/50 px-2 py-1 rounded border border-border/40 flex items-center gap-1.5" title={l.title || l.url}>
+                                        <span className="truncate max-w-[200px]">{l.title || "Bağlantı"}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {videos.length > 0 && videos.some(v => v.url) && (
+                        <div className="mt-4 p-3 bg-secondary/20 rounded-lg border border-border/40">
+                            <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Videolar</label>
+                            <div className="flex flex-col gap-2">
+                                {videos.filter(v => v.url).map((v, i) => (
+                                    <a key={`video-${i}`} href={v.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 group w-fit" title={v.title || v.url}>
+                                        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
+                                        </div>
+                                        <span className="underline-offset-4 group-hover:underline line-clamp-1">{v.title || "Video Bağlantısı"}</span>
                                     </a>
                                 ))}
                             </div>
