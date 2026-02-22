@@ -1,8 +1,11 @@
 "use client"
 
+import { formatDistanceToNow } from "date-fns"
+import { tr } from "date-fns/locale"
 import { useState, useTransition } from "react"
 import Link from "next/link"
 import { updateArticle } from "@/app/yaz/actions"
+import { useVideo } from "@/components/VideoProvider"
 import { Button } from "./ui/button"
 import { PlusCircle, Pencil, X, Check, Trash2 } from "lucide-react"
 
@@ -31,6 +34,7 @@ export function GirdiItem({
     index: number
     totalCount: number
 }) {
+    const { playVideo } = useVideo() // Added this line
     const [isEditing, setIsEditing] = useState(false)
     const [content, setContent] = useState(girdi.content)
     const [error, setError] = useState<string | null>(null)
@@ -189,12 +193,12 @@ export function GirdiItem({
                             <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-2">Videolar</label>
                             <div className="flex flex-col gap-2">
                                 {videos.filter(v => v.url).map((v, i) => (
-                                    <a key={`video-${i}`} href={v.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 group w-fit" title={v.title || v.url}>
+                                    <button type="button" key={`video-${i}`} onClick={() => playVideo(v.url, v.title)} className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 group w-fit text-left" title={v.title || v.url}>
                                         <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
                                         </div>
                                         <span className="underline-offset-4 group-hover:underline line-clamp-1">{v.title || "Video Bağlantısı"}</span>
-                                    </a>
+                                    </button>
                                 ))}
                             </div>
                         </div>

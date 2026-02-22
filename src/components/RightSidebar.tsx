@@ -4,6 +4,7 @@ import { Play } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { createClient } from "@/utils/supabase/client"
+import { useVideo } from "@/components/VideoProvider"
 
 interface Video {
     id: string
@@ -21,12 +22,14 @@ interface Video {
 }
 
 export function RightSidebar() {
+    const { playVideo } = useVideo()
     const [videos, setVideos] = useState<Video[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
+        const supabase = createClient()
+
         const fetchVideos = async () => {
-            const supabase = createClient()
             const { data, error } = await supabase
                 .from('videos')
                 .select(`
@@ -43,6 +46,23 @@ export function RightSidebar() {
         }
 
         fetchVideos()
+
+        // Listen for new videos added anywhere in the app
+        const channel = supabase
+            .channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'videos' },
+                () => {
+                    // Refetch to get the latest 5 with their joined topic data
+                    fetchVideos()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [])
 
     return (
@@ -69,7 +89,7 @@ export function RightSidebar() {
                     </div>
                 ) : videos.map((video) => (
                     <div key={video.id} className="group flex flex-col gap-2">
-                        <Link href={`/videolar#video-${video.id}`} className="block cursor-pointer">
+                        <button type="button" onClick={() => playVideo(video.video_url, video.title)} className="block cursor-pointer text-left w-full group">
                             <div className={`w-full aspect-video rounded-md overflow-hidden ${video.thumbnail_url || 'bg-secondary'} relative border border-border/50 group-hover:border-primary/50 transition-colors`}>
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Play className="h-8 w-8 text-white drop-shadow-md" fill="currentColor" />
@@ -83,7 +103,7 @@ export function RightSidebar() {
                             <h3 className="mt-2 text-sm font-medium text-foreground/90 leading-snug group-hover:text-primary transition-colors line-clamp-2">
                                 {video.title}
                             </h3>
-                        </Link>
+                        </button>
 
                         <div className="mt-auto">
                             <Link href={`/topic/${Array.isArray(video.topic) ? video.topic[0]?.id : video.topic?.id}`} className="text-xs font-medium text-primary hover:underline line-clamp-1">
@@ -94,7 +114,7 @@ export function RightSidebar() {
                 ))}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination Placeholder */}
             <div className="p-4 border-t border-border/40 flex items-center justify-center gap-1 mt-auto">
                 <button className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg>

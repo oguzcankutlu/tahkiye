@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AppLayout } from '@/components/AppLayout'
+import { VideoProvider } from '@/components/VideoProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,9 +26,11 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <AppLayout>
-            {children}
-          </AppLayout>
+          <VideoProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+          </VideoProvider>
         </ThemeProvider>
       </body>
     </html>
