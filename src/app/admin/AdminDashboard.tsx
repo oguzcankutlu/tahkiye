@@ -4,27 +4,29 @@ import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut } from "lucide-react"
-import { createTopic, deleteTopic, createVideo, deleteVideo, deleteArticle, deleteProfile } from "./actions"
+import { createTopic, deleteTopic, createVideo, deleteVideo, deleteArticle, deleteProfile, createAd, deleteAd, toggleAd } from "./actions"
 
-type Tab = 'users' | 'topics' | 'videos' | 'articles'
+type Tab = 'users' | 'topics' | 'videos' | 'articles' | 'ads'
 
 interface Topic { id: string; title: string; slug: string; description?: string | null; created_at: string }
 interface Video { id: string; title: string; video_url: string; duration?: string | null; created_at: string }
 interface Article { id: string; title: string; created_at: string; author_id: string; topic_id: string }
 interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string }
+interface Ad { id: string; title: string; image_url?: string | null; link_url?: string | null; position: string; is_active: boolean; created_at: string }
 
 interface Props {
     topics: Topic[]
     videos: Video[]
     articles: Article[]
     profiles: Profile[]
+    ads: Ad[]
 }
 
 function formatDate(d: string) {
     return new Date(d).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
 }
 
-export default function AdminDashboardClient({ topics, videos, articles, profiles }: Props) {
+export default function AdminDashboardClient({ topics, videos, articles, profiles, ads }: Props) {
     const [activeTab, setActiveTab] = useState<Tab>('users')
 
     const [topicError, setTopicError] = useState<string | null>(null)
@@ -65,11 +67,32 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
         startTransition(() => action(fd))
     }
 
+    const [adError, setAdError] = useState<string | null>(null)
+    const [adSuccess, setAdSuccess] = useState(false)
+    const [isAdPending, startAdTransition] = useTransition()
+
+    function handleAdSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        setAdError(null); setAdSuccess(false)
+        startAdTransition(async () => {
+            const result = await createAd(formData)
+            if (result?.error) setAdError(result.error)
+            else { setAdSuccess(true); (e.target as HTMLFormElement).reset() }
+        })
+    }
+
+    function handleToggleAd(id: string, is_active: boolean) {
+        const fd = new FormData(); fd.set('id', id); fd.set('is_active', String(is_active))
+        startTransition(async () => { await toggleAd(fd) })
+    }
+
     const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
         { key: 'users', label: 'Üyeler', icon: <Users className="h-4 w-4" />, count: profiles.length },
         { key: 'topics', label: 'Konular', icon: <Tag className="h-4 w-4" />, count: topics.length },
         { key: 'videos', label: 'Videolar', icon: <Video className="h-4 w-4" />, count: videos.length },
         { key: 'articles', label: 'Makaleler', icon: <FileText className="h-4 w-4" />, count: articles.length },
+        { key: 'ads', label: 'Reklamlar', icon: <span className="text-sm">📢</span>, count: ads.length },
     ]
 
     return (
@@ -275,6 +298,68 @@ export default function AdminDashboardClient({ topics, videos, articles, profile
                                         </tr>
                                     ))}
                                     {articles.length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">Henüz makale yok.</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* === REKLAMLAR === */}
+                {activeTab === 'ads' && (
+                    <div className="space-y-6 max-w-4xl">
+                        <h1 className="text-xl font-bold border-b border-border/40 pb-3">Reklam Yönetimi</h1>
+
+                        <div className="p-5 border border-border/40 rounded-xl bg-card">
+                            <h2 className="text-base font-bold flex items-center gap-2 mb-4"><PlusCircle className="h-4 w-4 text-primary" />Yeni Reklam Ekle</h2>
+                            <form onSubmit={handleAdSubmit} className="space-y-3">
+                                {adError && <p className="text-sm text-destructive">{adError}</p>}
+                                {adSuccess && <p className="text-sm text-green-500">Reklam eklendi! Sayfayı yenile.</p>}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="text-xs text-muted-foreground mb-1 block">Başlık *</label><Input name="title" required placeholder="Yaz Kampanyası" className="bg-background" /></div>
+                                    <div>
+                                        <label className="text-xs text-muted-foreground mb-1 block">Konum</label>
+                                        <select name="position" defaultValue="sidebar" className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
+                                            <option value="sidebar">Kenar Çubuğu</option>
+                                            <option value="header">Üst Banner</option>
+                                            <option value="footer">Alt Banner</option>
+                                            <option value="content">İçerik Arası</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div><label className="text-xs text-muted-foreground mb-1 block">Görsel URL</label><Input name="image_url" placeholder="https://..." className="bg-background" /></div>
+                                <div><label className="text-xs text-muted-foreground mb-1 block">Bağlantı URL</label><Input name="link_url" placeholder="https://reklam-linki.com" className="bg-background" /></div>
+                                <div className="flex justify-end"><Button type="submit" disabled={isAdPending} size="sm">{isAdPending ? "Ekleniyor..." : "Reklamı Ekle"}</Button></div>
+                            </form>
+                        </div>
+
+                        <div className="border border-border/40 rounded-lg overflow-hidden">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-muted-foreground bg-secondary/30 border-b border-border/40 uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left">Başlık</th>
+                                        <th className="px-4 py-3 text-left">Konum</th>
+                                        <th className="px-4 py-3 text-left">Durum</th>
+                                        <th className="px-4 py-3 text-right">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {ads.map(ad => (
+                                        <tr key={ad.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
+                                            <td className="px-4 py-3 font-medium max-w-xs truncate">{ad.title}</td>
+                                            <td className="px-4 py-3 text-muted-foreground capitalize">{ad.position}</td>
+                                            <td className="px-4 py-3">
+                                                <button onClick={() => handleToggleAd(ad.id, ad.is_active)} className={`px-2 py-0.5 rounded-full text-xs font-semibold ${ad.is_active ? 'bg-green-500/15 text-green-600' : 'bg-secondary text-muted-foreground'}`}>
+                                                    {ad.is_active ? 'Aktif' : 'Pasif'}
+                                                </button>
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button onClick={() => handleDelete(deleteAd, ad.id, `"${ad.title}" reklamını silmek istediğine emin misin?`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {ads.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">Henüz reklam yok.</td></tr>}
                                 </tbody>
                             </table>
                         </div>

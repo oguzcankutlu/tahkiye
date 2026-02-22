@@ -97,3 +97,49 @@ export async function deleteProfile(formData: FormData) {
     revalidatePath('/admin')
     return { success: true }
 }
+
+export async function createAd(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const title = formData.get('title') as string
+    const image_url = formData.get('image_url') as string
+    const link_url = formData.get('link_url') as string
+    const position = formData.get('position') as string
+
+    if (!title) return { error: 'Başlık zorunludur.' }
+
+    const { error } = await supabase.from('ads').insert({ title, image_url, link_url, position, is_active: true })
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    return { success: true }
+}
+
+export async function deleteAd(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const id = formData.get('id') as string
+    const { error } = await supabase.from('ads').delete().eq('id', id)
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    return { success: true }
+}
+
+export async function toggleAd(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const id = formData.get('id') as string
+    const is_active = formData.get('is_active') === 'true'
+    const { error } = await supabase.from('ads').update({ is_active: !is_active }).eq('id', id)
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    return { success: true }
+}
