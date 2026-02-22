@@ -26,8 +26,10 @@ export async function submitArticle(prevState: any, formData: FormData) {
 
     // 3. Form verilerini al
     const title = formData.get('title') as string
-    const topic_id = formData.get('topic_id') as string // UUID
+    const topic_id = formData.get('topic_id') as string
     const content = formData.get('content') as string
+    const related_links = formData.get('related_links') as string || '[]'
+    const related_videos = formData.get('related_videos') as string || '[]'
 
     if (!title || !topic_id || !content) {
         return { error: 'Lütfen tüm alanları doldurun.' }
@@ -45,7 +47,9 @@ export async function submitArticle(prevState: any, formData: FormData) {
             topic_id,
             title,
             content,
-            read_time
+            read_time,
+            related_links,
+            related_videos,
         })
         .select('id')
         .single()

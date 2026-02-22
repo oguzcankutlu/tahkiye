@@ -62,6 +62,14 @@ export default async function TopicPage({
                         {topic.description}
                     </p>
                 )}
+                <div className="mt-4">
+                    <Link
+                        href={`/yaz?topic_id=${topic.id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                    >
+                        + Yeni Girdi Ekle
+                    </Link>
+                </div>
             </div>
 
             {/* Articles List */}
