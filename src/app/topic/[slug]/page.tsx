@@ -39,7 +39,7 @@ export default async function TopicPage({
     const { data: rawArticles } = await supabase
         .from("articles")
         .select(`
-            id, title, content, created_at, author_id, related_links, related_videos, upvotes, downvotes,
+            id, title, content, created_at, author_id, related_links, related_videos,
             author:profiles ( username, full_name, avatar_url )
         `)
         .eq('topic_id', topic.id)
