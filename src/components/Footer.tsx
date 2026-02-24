@@ -14,6 +14,9 @@ export function Footer() {
                     <Link href="/zaman-tuneli" className="hover:text-primary transition-colors">
                         Zaman Tüneli
                     </Link>
+                    <Link href="/etiketler" className="hover:text-primary transition-colors">
+                        Etiketler
+                    </Link>
                     <Link href="/videolar" className="hover:text-primary transition-colors">
                         Videolar
                     </Link>
