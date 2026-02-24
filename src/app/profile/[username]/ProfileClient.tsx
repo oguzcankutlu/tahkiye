@@ -140,10 +140,7 @@ export default function ProfileClient({
                                         <Link href={`/konu/${topicSlug}`} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary hover:text-primary-foreground transition-colors">
                                             {topicTitle}
                                         </Link>
-                                        <span className="text-muted-foreground/50">•</span>
-                                        <span className="text-xs text-muted-foreground font-medium">
-                                            {article.read_time} dk okuma
-                                        </span>
+
                                     </div>
 
                                     <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-base">

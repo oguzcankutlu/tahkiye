@@ -125,22 +125,6 @@ export function HomeFeed({
                                     </div>
                                 )}
 
-                                {/* Author Info */}
-                                <div className="flex items-center gap-3">
-                                    <Link href={`/profile/${article.author.username}`} className="w-8 h-8 rounded-full bg-secondary overflow-hidden border border-border/50 shrink-0 flex justify-center items-center text-xs font-bold text-muted-foreground hover:ring-2 hover:ring-primary/40 transition-all">
-                                        {article.author.avatar_url ? (
-                                            <img src={article.author.avatar_url} alt={displayName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span>{initialLetter}</span>
-                                        )}
-                                    </Link>
-                                    <div className="flex flex-col">
-                                        <Link href={`/profile/${article.author.username}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
-                                            {displayName}
-                                        </Link>
-                                    </div>
-                                </div>
-
                                 {/* Article Body */}
                                 <div>
                                     {/* Title → links to /konu/[slug] */}
@@ -175,8 +159,6 @@ export function HomeFeed({
                                                 {article.topic?.title}
                                             </Link>
                                         )}
-                                        <span className="text-muted-foreground/30">•</span>
-                                        <span className="text-xs font-medium text-muted-foreground">{article.read_time} dk okuma</span>
                                     </div>
 
                                     <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-base text-muted-foreground">
@@ -221,6 +203,17 @@ export function HomeFeed({
                                     </div>
 
                                     <div className="flex items-center gap-3">
+                                        {/* Author info moved here */}
+                                        <Link href={`/profile/${article.author.username}`} className="flex items-center gap-2 mr-2 group">
+                                            <div className="w-6 h-6 rounded-full bg-secondary overflow-hidden border border-border/50 shrink-0 flex justify-center items-center text-[10px] font-bold text-muted-foreground group-hover:ring-2 group-hover:ring-primary/40 transition-all">
+                                                {article.author.avatar_url ? (
+                                                    <img src={article.author.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span>{initialLetter}</span>
+                                                )}
+                                            </div>
+                                            <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">{displayName}</span>
+                                        </Link>
                                         <div className="relative">
                                             <button
                                                 onClick={() => setShowShareId(showShareId === article.id ? null : article.id)}

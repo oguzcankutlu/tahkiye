@@ -192,6 +192,7 @@ export async function updateArticle(prevState: any, formData: FormData) {
 
     const id = formData.get('id') as string
     const content = formData.get('content') as string
+    const title = formData.get('title') as string || ''
     const related_links = formData.get('related_links') as string || '[]'
     const related_videos = formData.get('related_videos') as string || '[]'
 
@@ -208,6 +209,7 @@ export async function updateArticle(prevState: any, formData: FormData) {
     const { error } = await supabase
         .from('articles')
         .update({
+            title,
             content,
             related_links: linksArray,
             related_videos: videosArray,
