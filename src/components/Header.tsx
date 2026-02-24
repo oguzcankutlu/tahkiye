@@ -21,8 +21,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="w-full h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="w-full h-16 flex items-center justify-between px-2 sm:px-4">
+                    <div className="flex items-center gap-1 sm:gap-4">
                         <button
                             className="xl:hidden p-2 -ml-2 text-foreground hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded-md"
                             onClick={onMenuClick}
@@ -38,7 +38,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                         </Link>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 sm:gap-3">
                         <Link
                             href="/yaz"
                             className="p-2 text-muted-foreground md:bg-primary/10 md:text-primary md:hover:bg-primary/20 hover:text-primary hover:bg-secondary/80 rounded-md transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
@@ -58,7 +58,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
                         <Link
                             href="/videolar"
-                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-md transition-colors"
+                            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-md transition-colors items-center justify-center min-w-[44px] min-h-[44px]"
                             aria-label="Videolar"
                         >
                             <PlaySquare className="h-5 w-5" />
