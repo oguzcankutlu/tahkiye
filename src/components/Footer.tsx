@@ -11,6 +11,9 @@ export function Footer() {
                     </a>
                 </span>
                 <div className="flex items-center gap-4">
+                    <Link href="/zaman-tuneli" className="hover:text-primary transition-colors font-medium text-foreground">
+                        Zaman Tüneli
+                    </Link>
                     <Link href="/hakkimizda" className="hover:text-primary transition-colors">
                         Hakkımızda
                     </Link>
