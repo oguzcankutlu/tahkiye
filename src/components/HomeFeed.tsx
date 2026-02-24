@@ -13,7 +13,22 @@ interface Author {
     avatar_url: string | null
 }
 
+interface Tag {
+    id: string
+    name: string
+    type: 'general' | 'date'
+    slug: string
+}
+
 interface Topic {
+    id: string
+    title: string
+    slug: string
+    category_ids?: string[] | null
+    topic_tags?: { tags: Tag }[]
+}
+
+interface Category {
     id: string
     title: string
     slug: string
@@ -34,9 +49,11 @@ interface Article {
 
 export function HomeFeed({
     articles,
+    categories = [],
     currentUserId
 }: {
     articles: Article[]
+    categories?: Category[]
     currentUserId?: string
 }) {
     const [showShareId, setShowShareId] = useState<string | null>(null)
@@ -91,6 +108,12 @@ export function HomeFeed({
                     const initialLetter = displayName.charAt(0).toUpperCase()
                     const shareLink = getShareLink(article.id)
 
+                    // Resolve categories and tags from topic
+                    const topicCategoryIds = article.topic?.category_ids || []
+                    const topicCategories = categories.filter(c => topicCategoryIds.includes(c.id))
+                    const allTags = article.topic?.topic_tags?.map((tt: any) => tt.tags).filter(Boolean) || []
+                    const generalTags = allTags.filter((t: any) => t?.type === 'general')
+
                     return (
                         <ViewTracker key={article.id} articleId={article.id}>
                             <article className="relative group flex flex-col gap-4 border-b border-border/20 pb-12 last:border-0 last:pb-0">
@@ -120,15 +143,38 @@ export function HomeFeed({
 
                                 {/* Article Body */}
                                 <div>
-                                    <Link href={`/article/${article.id}`} className="block">
+                                    {/* Title → links to /konu/[slug] */}
+                                    <Link href={`/konu/${article.topic?.slug}`} className="block">
                                         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-tight mb-2">
                                             {article.title}
                                         </h2>
                                     </Link>
+
+                                    {/* Categories & Tags (replaces repeated title badge) */}
                                     <div className="flex flex-wrap items-center gap-2 mb-4">
-                                        <Link href={`/konu/${article.topic?.slug}`} className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[11px] font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all">
-                                            {article.topic?.title}
-                                        </Link>
+                                        {topicCategories.map(cat => (
+                                            <Link
+                                                key={cat.id}
+                                                href={`/category/${cat.slug}`}
+                                                className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[11px] font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all"
+                                            >
+                                                {cat.title}
+                                            </Link>
+                                        ))}
+                                        {generalTags.map((tag: any) => (
+                                            <Link
+                                                key={tag.id}
+                                                href={`/arama?tag=${tag.slug}`}
+                                                className="px-2 py-0.5 bg-secondary/60 text-secondary-foreground rounded-md text-[11px] font-medium hover:bg-secondary transition-all before:content-['#'] before:opacity-50 before:mr-0.5"
+                                            >
+                                                {tag.name}
+                                            </Link>
+                                        ))}
+                                        {topicCategories.length === 0 && generalTags.length === 0 && (
+                                            <Link href={`/konu/${article.topic?.slug}`} className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[11px] font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all">
+                                                {article.topic?.title}
+                                            </Link>
+                                        )}
                                         <span className="text-muted-foreground/30">•</span>
                                         <span className="text-xs font-medium text-muted-foreground">{article.read_time} dk okuma</span>
                                     </div>
