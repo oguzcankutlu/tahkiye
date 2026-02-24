@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ThemeToggle } from "./ThemeToggle"
-import { Menu, PlaySquare, Search } from "lucide-react"
+import { Menu, PlaySquare, Search, Plus } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { UserMenu } from "./UserMenu"
@@ -39,9 +39,18 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <Link
+                            href="/yaz"
+                            className="p-2 text-muted-foreground md:bg-primary/10 md:text-primary md:hover:bg-primary/20 hover:text-primary hover:bg-secondary/80 rounded-md transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]"
+                            aria-label="Yeni Konu Aç"
+                            title="Yeni Konu Aç"
+                        >
+                            <Plus className="h-5 w-5" />
+                        </Link>
+
                         <button
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
-                            className={`p-2 rounded-md transition-colors ${isSearchOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'}`}
+                            className={`p-2 rounded-md transition-colors flex items-center justify-center min-w-[44px] min-h-[44px] ${isSearchOpen ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/80'}`}
                             aria-label="Arama"
                         >
                             <Search className="h-5 w-5" />

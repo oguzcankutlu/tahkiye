@@ -26,7 +26,11 @@ export function Sidebar({ className = "" }: { className?: string }) {
     const [konular, setKonular] = useState<Konu[]>([])
     const [selectedCat, setSelectedCat] = useState<string>("all")
     const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const ITEMS_PER_PAGE = 50
     const pathname = usePathname()
+
+    useEffect(() => { setPage(1) }, [selectedCat])
 
     useEffect(() => {
         const fetchSidebarData = async () => {
@@ -100,6 +104,9 @@ export function Sidebar({ className = "" }: { className?: string }) {
         ? konular
         : konular.filter(k => k.category_ids?.includes(selectedCat))
 
+    const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
+    const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
+
     return (
         <div className={`flex flex-col h-full bg-background border-r border-border/40 w-[280px] shrink-0 overflow-hidden ${className}`}>
 
@@ -135,8 +142,9 @@ export function Sidebar({ className = "" }: { className?: string }) {
                     </div>
                 ) : (
                     <div className="divide-y divide-border/5">
-                        {filtered.map((konu, index) => {
+                        {paginated.map((konu, index) => {
                             const isActive = pathname === `/topic/${konu.slug}`
+                            const displayIndex = (page - 1) * ITEMS_PER_PAGE + index + 1
                             return (
                                 <Link
                                     key={konu.id}
@@ -148,7 +156,7 @@ export function Sidebar({ className = "" }: { className?: string }) {
                                     {/* 2. GİRDİ SAYISI (ENTRY COUNT) GÖSTERİMİ */}
                                     <div className="flex items-start gap-2 mr-2">
                                         <span className="text-[10px] font-bold text-muted-foreground/40 tabular-nums mt-0.5 w-4 hidden sm:inline-block">
-                                            {index + 1}.
+                                            {displayIndex}.
                                         </span>
                                         <span className={`text-sm leading-tight transition-colors ${isActive ? 'text-primary font-bold' : 'text-foreground/85 group-hover:text-foreground'}`}>
                                             {konu.title}
@@ -164,15 +172,29 @@ export function Sidebar({ className = "" }: { className?: string }) {
                 )}
             </div>
 
-            <div className="p-4 border-t border-border/40 bg-card/30">
-                <Link
-                    href="/yaz"
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold uppercase tracking-widest transition-all shadow-sm hover:shadow-md"
-                >
-                    <PlusCircle className="h-4 w-4" />
-                    Yeni Konu Aç
-                </Link>
-            </div>
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 p-3 border-t border-border/40 bg-card/30">
+                    <button
+                        disabled={page === 1}
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        className="w-8 h-8 flex items-center justify-center rounded hover:bg-secondary disabled:opacity-30 text-xs font-bold text-muted-foreground transition-colors"
+                    >
+                        &lt;
+                    </button>
+
+                    <span className="text-xs font-semibold text-muted-foreground min-w-[3ch] text-center">
+                        {page}
+                    </span>
+
+                    <button
+                        disabled={page === totalPages}
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        className="w-8 h-8 flex items-center justify-center rounded hover:bg-secondary disabled:opacity-30 text-xs font-bold text-muted-foreground transition-colors"
+                    >
+                        &gt;
+                    </button>
+                </div>
+            )}
         </div>
     )
 }
