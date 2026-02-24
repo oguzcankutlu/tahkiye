@@ -103,7 +103,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                                         </span>
                                         <span className="w-1 h-1 rounded-full bg-border/40" />
                                         <span className="text-[11px] text-muted-foreground">
-                                            Son Aktivite: {new Date(topic.created_at).toLocaleDateString('tr-TR')}
+                                            Son Aktivite: {new Date(topic.created_at).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
                                         </span>
                                     </div>
                                 </div>

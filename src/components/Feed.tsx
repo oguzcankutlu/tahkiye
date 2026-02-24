@@ -56,8 +56,7 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
     const [isVoting, setIsVoting] = useState(false)
 
     const formattedDate = new Date(article.created_at).toLocaleDateString("tr-TR", {
-        day: "2-digit",
-        month: "2-digit",
+        month: "long",
         year: "numeric"
     })
 

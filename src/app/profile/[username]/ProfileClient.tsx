@@ -117,7 +117,7 @@ export default function ProfileClient({
                         const topicTitle = topic?.title
                         const topicSlug = topic?.slug
                         const formattedDate = new Date(article.created_at).toLocaleDateString("tr-TR", {
-                            day: "2-digit", month: "long", year: "numeric"
+                            month: "long", year: "numeric"
                         })
                         const contentSnippet = article.content.length > 300
                             ? article.content.substring(0, 300) + '...'

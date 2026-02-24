@@ -56,7 +56,7 @@ export function GirdiItem({
 
     const initialLetter = authorName.charAt(0).toUpperCase()
     const formattedDate = new Date(girdi.created_at).toLocaleDateString("tr-TR", {
-        day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+        month: "long", year: "numeric"
     })
 
     // Action handlers for dynamic fields
