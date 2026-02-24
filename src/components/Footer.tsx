@@ -11,8 +11,11 @@ export function Footer() {
                     </a>
                 </span>
                 <div className="flex items-center gap-4">
-                    <Link href="/zaman-tuneli" className="hover:text-primary transition-colors font-medium text-foreground">
+                    <Link href="/zaman-tuneli" className="hover:text-primary transition-colors">
                         Zaman Tüneli
+                    </Link>
+                    <Link href="/videolar" className="hover:text-primary transition-colors">
+                        Videolar
                     </Link>
                     <Link href="/hakkimizda" className="hover:text-primary transition-colors">
                         Hakkımızda
