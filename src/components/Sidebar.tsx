@@ -16,7 +16,7 @@ interface Konu {
     id: string
     title: string
     slug: string
-    category_id: string | null
+    category_ids: string[] | null
     entryCount: number
     lastActivity: string
 }
@@ -42,7 +42,7 @@ export function Sidebar({ className = "" }: { className?: string }) {
                 // Not: category_id kolonu henüz eklenmemiş olabilir, bu yüzden hata kontrolü yapıyoruz
                 const { data: topics, error: topicsError } = await supabase
                     .from('topics')
-                    .select('id, title, slug, category_id, created_at')
+                    .select('id, title, slug, category_ids, created_at')
                     .order('created_at', { ascending: false })
 
                 if (topicsError) {
@@ -98,7 +98,7 @@ export function Sidebar({ className = "" }: { className?: string }) {
 
     const filtered = selectedCat === "all"
         ? konular
-        : konular.filter(k => k.category_id === selectedCat)
+        : konular.filter(k => k.category_ids?.includes(selectedCat))
 
     return (
         <div className={`flex flex-col h-full bg-background border-r border-border/40 w-[280px] shrink-0 overflow-hidden ${className}`}>

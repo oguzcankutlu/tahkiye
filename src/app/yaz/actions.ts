@@ -41,7 +41,8 @@ export async function submitArticle(prevState: any, formData: FormData) {
     // 3. Form verilerini al
     let topic_id = formData.get('topic_id') as string // UUID if adding to existing
     const new_topic_title = formData.get('new_topic_title') as string
-    const category_id = formData.get('category_id') as string // UUID if provided
+    const category_ids_str = formData.get('category_ids') as string // array JSON
+    const category_ids = category_ids_str ? JSON.parse(category_ids_str) : []
     const content = formData.get('content') as string
     const related_videos = formData.get('related_videos') as string || '[]'
     const related_links = formData.get('related_links') as string || '[]'
@@ -79,7 +80,7 @@ export async function submitArticle(prevState: any, formData: FormData) {
                 .insert({
                     title: new_topic_title,
                     slug: slug,
-                    category_id: category_id || null,
+                    category_ids: category_ids,
                     type: type,
                     era: era || null,
                     era_year: era_year

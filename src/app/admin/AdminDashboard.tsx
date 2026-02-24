@@ -16,7 +16,7 @@ import {
 type Tab = 'users' | 'categories' | 'topics' | 'videos' | 'articles' | 'ads'
 
 interface Category { id: string; title: string; slug: string; created_at: string }
-interface Topic { id: string; title: string; slug: string; category_id?: string | null; created_at: string }
+interface Topic { id: string; title: string; slug: string; category_ids?: string[]; created_at: string }
 interface Video { id: string; title: string; video_url: string; duration?: string | null; created_at: string }
 interface Article { id: string; title: string; created_at: string; author_id: string; topic_id: string }
 interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string }
@@ -50,6 +50,7 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
     const [videoSuccess, setVideoSuccess] = useState(false)
     const [isVideoPending, startVideoTransition] = useTransition()
 
+    const [selectedTopicCategories, setSelectedTopicCategories] = useState<string[]>([])
     const [isPending, startTransition] = useTransition()
 
     function handleCategorySubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -243,10 +244,24 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                                     <Input name="title" required placeholder="Başlık (örn: Antigravity)" />
                                     <Input name="slug" required placeholder="Slug (örn: antigravity)" />
                                 </div>
-                                <select name="category_id" className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
-                                    <option value="">Kategori Seçin (Opsiyonel)</option>
-                                    {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                                </select>
+                                <input type="hidden" name="category_ids" value={JSON.stringify(selectedTopicCategories)} />
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-medium text-muted-foreground w-full">Bağlı Kategoriler (Opsiyonel Çoklu Seçim)</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {categories.map(c => {
+                                            const isSelected = selectedTopicCategories.includes(c.id)
+                                            return (
+                                                <button
+                                                    key={c.id} type="button"
+                                                    onClick={() => setSelectedTopicCategories(prev => prev.includes(c.id) ? prev.filter(x => x !== c.id) : [...prev, c.id])}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${isSelected ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
+                                                >
+                                                    {c.title}
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
                                 <div className="flex justify-end"><Button type="submit" disabled={isTopicPending}>{isTopicPending ? "Ekleniyor..." : "Konu Ekle"}</Button></div>
                             </form>
                         </div>
@@ -261,7 +276,7 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                                         <tr key={t.id} className="border-b border-border/20 hover:bg-secondary/10">
                                             <td className="px-4 py-3 font-medium">{t.title}</td>
                                             <td className="px-4 py-3 text-muted-foreground text-xs">
-                                                {categories.find(c => c.id === t.category_id)?.title || '—'}
+                                                {t.category_ids?.map(id => categories.find(c => c.id === id)?.title).filter(Boolean).join(', ') || '—'}
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <button onClick={() => handleDelete(deleteTopic, t.id, `Konu silinsin mi? ${t.title}`)} className="p-1.5 text-destructive hover:bg-destructive/10">

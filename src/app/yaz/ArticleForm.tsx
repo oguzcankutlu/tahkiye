@@ -24,6 +24,8 @@ export function ArticleForm({
     // Mode: 'new_topic' = create konu + first girdi, 'add_entry' = add to existing konu
     const mode = preselectedTopicId ? 'add_entry' : 'new_topic'
 
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
     const [relatedLinks, setRelatedLinks] = useState<RelatedLink[]>([{ title: "", url: "" }])
     const [relatedVideos, setRelatedVideos] = useState<RelatedLink[]>([{ title: "", url: "" }])
 
@@ -101,20 +103,34 @@ export function ArticleForm({
                             </div>
 
                             <div>
-                                <label htmlFor="category_id" className="block text-sm font-medium text-muted-foreground mb-1.5">
-                                    Kategori
+                                <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+                                    Kategoriler (Çoklu Seçim İsteğe Bağlı)
                                 </label>
-                                <select
-                                    id="category_id"
-                                    name="category_id"
-                                    defaultValue=""
-                                    className="w-full flex h-12 rounded-md border border-input bg-background/50 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                >
-                                    <option value="">Kategori Seçin (İsteğe Bağlı)</option>
-                                    {categories.map(c => (
-                                        <option key={c.id} value={c.id}>{c.title}</option>
-                                    ))}
-                                </select>
+                                <input type="hidden" name="category_ids" value={JSON.stringify(selectedCategories)} />
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {categories.map(c => {
+                                        const isSelected = selectedCategories.includes(c.id)
+                                        return (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedCategories(prev =>
+                                                        prev.includes(c.id)
+                                                            ? prev.filter(id => id !== c.id)
+                                                            : [...prev, c.id]
+                                                    )
+                                                }}
+                                                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${isSelected
+                                                    ? "bg-primary text-primary-foreground border-primary"
+                                                    : "bg-background text-muted-foreground hover:border-primary/50"
+                                                    }`}
+                                            >
+                                                {c.title}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         </div>
 

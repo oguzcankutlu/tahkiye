@@ -10,7 +10,8 @@ export async function createTopic(formData: FormData) {
 
     const title = formData.get('title') as string
     const slug = formData.get('slug') as string
-    const category_id = formData.get('category_id') as string // Yeni: kategori bağı
+    const category_ids_str = formData.get('category_ids') as string // array JSON
+    const category_ids = category_ids_str ? JSON.parse(category_ids_str) : []
     const description = formData.get('description') as string
 
     if (!title || !slug) return { error: 'Başlık ve Slug zorunludur.' }
@@ -18,7 +19,7 @@ export async function createTopic(formData: FormData) {
     const { error } = await supabase.from('topics').insert({
         title,
         slug,
-        category_id: category_id || null,
+        category_ids,
         description
     })
     if (error) return { error: error.message }

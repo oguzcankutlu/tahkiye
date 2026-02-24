@@ -8,7 +8,7 @@ export async function getCategories() {
     const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .order('order', { ascending: true })
+        .order('title', { ascending: true })
 
     if (error) {
         console.error('Error fetching categories:', error)
@@ -31,7 +31,7 @@ export async function getTopics(categoryId?: number) {
         .limit(20)
 
     if (categoryId) {
-        query = query.eq('category_id', categoryId)
+        query = query.contains('category_ids', [categoryId])
     }
 
     const { data, error } = await query

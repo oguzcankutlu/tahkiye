@@ -37,7 +37,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             *,
             articles(count)
         `)
-        .eq('category_id', category.id)
+        .contains('category_ids', [category.id])
 
     // Filtrele: Tür
     if (activeType && activeType !== 'all') {
@@ -167,8 +167,8 @@ function FilterLink({ active, label, value, slug, currentSort }: { active: boole
         <Link
             href={url}
             className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${active
-                    ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105'
-                    : 'bg-background hover:bg-secondary border-border/40 text-muted-foreground'
+                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105'
+                : 'bg-background hover:bg-secondary border-border/40 text-muted-foreground'
                 }`}
         >
             {label}
@@ -182,8 +182,8 @@ function SortButton({ active, label, value, icon: Icon, slug, currentType }: { a
         <Link
             href={url}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${active
-                    ? 'bg-primary/20 text-primary border border-primary/30'
-                    : 'hover:bg-secondary text-muted-foreground'
+                ? 'bg-primary/20 text-primary border border-primary/30'
+                : 'hover:bg-secondary text-muted-foreground'
                 }`}
         >
             <Icon className="h-3.5 w-3.5" />
