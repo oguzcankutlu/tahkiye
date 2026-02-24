@@ -53,7 +53,7 @@ export async function updateTopic(formData: FormData) {
     if (error) return { error: error.message }
 
     revalidatePath('/admin')
-    revalidatePath(`/topic/${slug}`)
+    revalidatePath(`/konu/${slug}`)
     revalidatePath('/')
     return { success: true }
 }

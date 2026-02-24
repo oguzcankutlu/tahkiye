@@ -134,7 +134,7 @@ export default function ProfileClient({
                                 </Link>
 
                                 <div className="flex items-center gap-3 py-1">
-                                    <Link href={`/topic/${topicSlug}`} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary hover:text-primary-foreground transition-colors">
+                                    <Link href={`/konu/${topicSlug}`} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary hover:text-primary-foreground transition-colors">
                                         {topicTitle}
                                     </Link>
                                     <span className="text-muted-foreground/50">•</span>

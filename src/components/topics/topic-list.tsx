@@ -114,7 +114,7 @@ export function TopicList({ className }: { className?: string }) {
                 {currentTopics.map((topic) => (
                     <li key={topic.id}>
                         <Link
-                            href={`/topic/${topic.id}`}
+                            href={`/konu/${topic.id}`}
                             className="flex items-start justify-between group px-2 py-1.5 rounded-sm hover:bg-muted/60 transition-colors text-[14px] leading-snug"
                         >
                             <span className="text-foreground/90 group-hover:text-primary transition-colors line-clamp-2 pr-2">

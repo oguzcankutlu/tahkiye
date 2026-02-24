@@ -114,7 +114,7 @@ export default function SearchClient({
                                             </div>
 
                                             <div className="flex items-center gap-2 text-[11px] font-medium">
-                                                <Link href={`/topic/${topic?.slug}`} className="px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors font-bold uppercase tracking-tight">
+                                                <Link href={`/konu/${topic?.slug}`} className="px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors font-bold uppercase tracking-tight">
                                                     {topic?.title}
                                                 </Link>
                                                 <span className="text-muted-foreground/30">•</span>

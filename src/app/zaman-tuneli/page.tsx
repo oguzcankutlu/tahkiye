@@ -178,7 +178,7 @@ export default async function ZamanTuneli() {
                                                                         {card.year < 0 ? `M.Ö. ${Math.abs(card.year)}` : card.year}
                                                                     </span>
                                                                     <Link
-                                                                        href={`/topic/${card.slug}`}
+                                                                        href={`/konu/${card.slug}`}
                                                                         target="_blank"
                                                                         className="text-lg font-semibold text-foreground hover:text-primary transition-colors leading-tight mb-2"
                                                                     >

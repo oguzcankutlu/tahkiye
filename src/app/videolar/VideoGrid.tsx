@@ -59,7 +59,7 @@ export function VideoGrid({ videos }: { videos: VideoWithTopic[] }) {
 
                         <div className="mt-auto">
                             {topicSlug ? (
-                                <Link href={`/topic/${topicSlug}`} className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors line-clamp-1 w-max max-w-full">
+                                <Link href={`/konu/${topicSlug}`} className="inline-flex items-center text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md hover:bg-primary hover:text-primary-foreground transition-colors line-clamp-1 w-max max-w-full">
                                     {topicTitle}
                                 </Link>
                             ) : (

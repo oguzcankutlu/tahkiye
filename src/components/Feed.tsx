@@ -102,7 +102,7 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
 
                 {/* Etiketler (Tags) */}
                 <div className="flex flex-wrap gap-2">
-                    <Link href={`/topic/${article.topic?.slug}`} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold whitespace-nowrap hover:bg-primary hover:text-primary-foreground transition-colors">
+                    <Link href={`/konu/${article.topic?.slug}`} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold whitespace-nowrap hover:bg-primary hover:text-primary-foreground transition-colors">
                         {article.topic?.title}
                     </Link>
                 </div>

@@ -79,7 +79,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                         return (
                             <Link
                                 key={topic.id}
-                                href={`/topic/${topic.slug}`}
+                                href={`/konu/${topic.slug}`}
                                 className="group block relative"
                             >
                                 <div className="p-5 rounded-2xl border border-border/50 bg-secondary/5 hover:bg-secondary/10 transition-all hover:border-primary/30 shadow-sm hover:shadow-md">

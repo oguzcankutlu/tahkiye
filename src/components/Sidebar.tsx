@@ -143,12 +143,12 @@ export function Sidebar({ className = "" }: { className?: string }) {
                 ) : (
                     <div className="divide-y divide-border/5">
                         {paginated.map((konu, index) => {
-                            const isActive = pathname === `/topic/${konu.slug}`
+                            const isActive = pathname === `/konu/${konu.slug}`
                             const displayIndex = (page - 1) * ITEMS_PER_PAGE + index + 1
                             return (
                                 <Link
                                     key={konu.id}
-                                    href={`/topic/${konu.slug}`}
+                                    href={`/konu/${konu.slug}`}
                                     className={`flex items-center justify-between px-4 py-3.5 transition-all group hover:bg-secondary/30 relative ${isActive ? 'bg-primary/5' : ''}`}
                                 >
                                     {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary shadow-[0_0_10px_rgba(234,179,8,0.5)]" />}
