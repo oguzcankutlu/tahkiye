@@ -11,42 +11,15 @@ export async function voteArticle(articleId: string, type: 'up' | 'down') {
         return { error: "Oy vermek için giriş yapmalısınız." }
     }
 
-    // 1. Yazıyı ve mevcut oyları/seçmenleri al
-    const { data: article, error: fetchError } = await supabase
-        .from('articles')
-        .select('upvotes, downvotes, voters')
-        .eq('id', articleId)
-        .single()
+    // Use a secure RPC to bypass RLS UPDATE policy checking ownership
+    const { error: rpcError } = await supabase.rpc('vote_for_article', {
+        target_article_id: articleId,
+        vote_type: type,
+        user_id: user.id
+    })
 
-    if (fetchError || !article) {
-        return { error: "Yazı bulunamadı." }
-    }
-
-    const voters = article.voters || []
-
-    // 2. Kullanıcı daha önce oy vermiş mi kontrol et
-    if (voters.includes(user.id)) {
-        return { error: "Bu yazıya zaten oy verdiniz." }
-    }
-
-    // 3. Oyları güncelle
-    const updates: any = {
-        voters: [...voters, user.id]
-    }
-
-    if (type === 'up') {
-        updates.upvotes = (article.upvotes || 0) + 1
-    } else {
-        updates.downvotes = (article.downvotes || 0) + 1
-    }
-
-    const { error: updateError } = await supabase
-        .from('articles')
-        .update(updates)
-        .eq('id', articleId)
-
-    if (updateError) {
-        return { error: "Oy kaydedilirken hata oluştu: " + updateError.message }
+    if (rpcError) {
+        return { error: "Oy kaydedilirken hata oluştu: " + rpcError.message }
     }
 
     revalidatePath('/', 'layout')
