@@ -49,6 +49,10 @@ export function GirdiItem({
     const [links, setLinks] = useState<RelatedLink[]>(initialLinks)
     const [videos, setVideos] = useState<RelatedLink[]>(initialVideos)
 
+    const upvotes = girdi.upvotes || 0
+    const downvotes = girdi.downvotes || 0
+    const views = girdi.views || 0
+
     const author = Array.isArray(girdi.author) ? girdi.author[0] : girdi.author
     const authorName = author?.full_name || author?.username || "Anonim"
     const authorUsername = author?.username
@@ -122,9 +126,6 @@ export function GirdiItem({
         alert("Link kopyalandı!")
         setShowShare(false)
     }
-
-    const upvotes = girdi.upvotes || 0
-    const downvotes = girdi.downvotes || 0
 
     return (
         <article className="relative pl-6 sm:pl-10 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary/20 hover:before:bg-primary transition-all">
@@ -244,6 +245,11 @@ export function GirdiItem({
                             <span className="text-base group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
                             <span className="text-xs font-bold text-muted-foreground group-hover:text-destructive tabular-nums">{downvotes}</span>
                         </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-muted-foreground/80 hover:text-muted-foreground transition-colors">
+                        <span className="text-base">👁️</span>
+                        <span className="tabular-nums">{views}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-tight">

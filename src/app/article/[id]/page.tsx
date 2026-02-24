@@ -1,6 +1,7 @@
 import { Feed } from "@/components/Feed"
 import { createClient } from "@/utils/supabase/server"
 import { notFound } from "next/navigation"
+import { incrementArticleViews } from "@/app/actions/entry-actions"
 
 export default async function ArticlePage({
     params,
@@ -29,6 +30,9 @@ export default async function ArticlePage({
         }
         return notFound()
     }
+
+    // Safely increment article views in the background
+    incrementArticleViews(article.id)
 
     // Fetch some related articles for the same topic (excluding the current one)
     const { data: relatedArticles } = await supabase

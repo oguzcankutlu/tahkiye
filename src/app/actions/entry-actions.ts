@@ -25,3 +25,16 @@ export async function voteArticle(articleId: string, type: 'up' | 'down') {
     revalidatePath('/', 'layout')
     return { success: true }
 }
+
+export async function incrementArticleViews(articleId: string) {
+    const supabase = await createClient()
+
+    // Yalnızca görüntülenmeyi artıran güvenli bir RPC fonksiyonu (Kullanıcı girişi gerektirmez)
+    const { error } = await supabase.rpc('increment_article_views', {
+        target_article_id: articleId
+    })
+
+    if (error) {
+        console.error("Görüntülenme artırılamadı:", error.message)
+    }
+}

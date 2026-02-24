@@ -11,6 +11,7 @@ interface ArticleWithTopic {
     content: string
     created_at: string
     read_time: number
+    views?: number
     upvotes?: number
     downvotes?: number
     topic: { id: string; title: string; slug: string } | { id: string; title: string; slug: string }[] | null
@@ -165,7 +166,11 @@ export default function ProfileClient({
                                             <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
                                             <span className="tabular-nums">{article.downvotes || 0}</span>
                                         </button>
-                                        <span className="text-[10px] text-muted-foreground/60 uppercase font-medium ml-2">
+                                        <div className="flex items-center gap-1.5 border-l border-border/50 pl-4 text-muted-foreground/80 hover:text-muted-foreground transition-colors ml-2">
+                                            <span className="text-lg">👁️</span>
+                                            <span className="tabular-nums">{article.views || 0}</span>
+                                        </div>
+                                        <span className="text-[10px] text-muted-foreground/60 uppercase font-medium ml-2 border-l border-border/50 pl-4 h-4 flex items-center">
                                             {formattedDate}
                                         </span>
                                     </div>

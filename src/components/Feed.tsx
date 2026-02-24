@@ -29,6 +29,7 @@ interface Article {
     created_at: string
     author: Author
     topic: Topic
+    views?: number
     upvotes?: number
     downvotes?: number
     related_links?: string | any[]
@@ -196,6 +197,10 @@ export function Feed({ article, relatedArticles, currentUserId }: FeedProps) {
                             <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
                             <span className="font-bold tabular-nums">{article.downvotes || 0}</span>
                         </button>
+                        <div className="flex items-center gap-1.5 ml-2 border-l border-border/50 pl-4 text-muted-foreground/80 hover:text-muted-foreground transition-colors">
+                            <span className="text-lg">👁️</span>
+                            <span className="font-bold tabular-nums">{article.views || 0}</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center justify-between w-full sm:w-auto gap-4">

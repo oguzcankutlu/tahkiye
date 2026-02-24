@@ -24,6 +24,7 @@ interface Article {
     content: string
     read_time: number
     created_at: string
+    views?: number
     upvotes?: number
     downvotes?: number
     author: Author
@@ -165,6 +166,10 @@ export function HomeFeed({
                                         <span className="text-lg grayscale hover:grayscale-0">👎</span>
                                         <span className="tabular-nums">{article.downvotes || 0}</span>
                                     </button>
+                                    <div className="flex items-center gap-1.5 ml-2 border-l border-border/50 pl-4 text-muted-foreground/80 hover:text-muted-foreground transition-colors">
+                                        <span className="text-lg">👁️</span>
+                                        <span className="tabular-nums">{article.views || 0}</span>
+                                    </div>
                                     <span className="text-[10px] text-muted-foreground/50 uppercase font-medium ml-2 border-l border-border/50 pl-4 h-4 flex items-center">
                                         {formattedDate}
                                     </span>
