@@ -18,10 +18,12 @@ interface SearchResult {
 export default function SearchClient({
     searchResults,
     query,
+    tagLabel,
     currentUserId
 }: {
     searchResults: SearchResult[]
     query: string
+    tagLabel?: string
     currentUserId?: string
 }) {
     const [showShareId, setShowShareId] = useState<string | null>(null)
@@ -50,11 +52,13 @@ export default function SearchClient({
         <div className="w-full pb-20">
             <div className="mb-8 border-b border-border/40 pb-6">
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-                    <Search className="h-8 w-8 text-primary" />
-                    Arama Sonuçları
+                    {tagLabel ? <span className="text-secondary-foreground text-4xl">#</span> : <Search className="h-8 w-8 text-primary" />}
+                    {tagLabel ? tagLabel : "Arama Sonuçları"}
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                    {query ? (
+                    {tagLabel ? (
+                        <>Bu etikete sahip tüm konu girdileri listeleniyor.</>
+                    ) : query ? (
                         <><span className="font-semibold text-primary">"{query}"</span> için bulunan sonuçlar</>
                     ) : (
                         "Arama yapmak için bir kelime girin."
@@ -62,7 +66,7 @@ export default function SearchClient({
                 </p>
             </div>
 
-            {query ? (
+            {query || tagLabel ? (
                 <div className="space-y-6">
                     {searchResults.length > 0 ? (
                         searchResults.map((article) => {

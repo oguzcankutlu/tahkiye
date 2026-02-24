@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { submitArticle } from "./actions"
 import { PlusCircle, Trash2 } from "lucide-react"
+import { TagInput } from "@/components/TagInput"
 
 interface Topic { id: string; title: string }
 interface Category { id: string; title: string }
@@ -25,6 +26,8 @@ export function ArticleForm({
     const mode = preselectedTopicId ? 'add_entry' : 'new_topic'
 
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [generalTags, setGeneralTags] = useState<string[]>([])
+    const [dateTags, setDateTags] = useState<string[]>([])
 
     const [relatedLinks, setRelatedLinks] = useState<RelatedLink[]>([{ title: "", url: "" }])
     const [relatedVideos, setRelatedVideos] = useState<RelatedLink[]>([{ title: "", url: "" }])
@@ -134,49 +137,24 @@ export function ArticleForm({
                             </div>
                         </div>
 
-                        {/* YENİ: Tür ve Tarihsellik Alanları */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-primary/10 pt-4">
-                            <div>
-                                <label htmlFor="type" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
-                                    Tür (Opsiyonel)
-                                </label>
-                                <select
-                                    id="type"
-                                    name="type"
-                                    defaultValue="general"
-                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                >
-                                    <option value="general">Genel</option>
-                                    <option value="person">Kişi</option>
-                                    <option value="work">Eser</option>
-                                    <option value="concept">Kavram</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label htmlFor="era" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
-                                    Tarih / Dönem
-                                </label>
-                                <input
-                                    id="era"
-                                    name="era"
-                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="Örn: 1957, M.Ö. 400"
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="era_year" className="block text-xs font-bold text-muted-foreground/60 uppercase mb-1.5">
-                                    Yıl (Sıralama için)
-                                </label>
-                                <input
-                                    id="era_year"
-                                    name="era_year"
-                                    type="number"
-                                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="Örn: 1957, -400"
-                                />
-                            </div>
+                        {/* YENİ: Çoklu Etiket Alanları */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-primary/10 pt-4">
+                            <TagInput
+                                label="Konu Etiketleri (Opsiyonel)"
+                                name="general_tags"
+                                id="general_tags"
+                                placeholder="Örn: yapay-zeka, edebiyat"
+                                value={generalTags}
+                                onChange={setGeneralTags}
+                            />
+                            <TagInput
+                                label="Tarih / Dönem Etiketleri (Opsiyonel)"
+                                name="date_tags"
+                                id="date_tags"
+                                placeholder="Örn: 1950ler, antik-yunan, m.ö.-400"
+                                value={dateTags}
+                                onChange={setDateTags}
+                            />
                         </div>
                     </div>
                 </>

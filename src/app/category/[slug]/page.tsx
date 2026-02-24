@@ -67,69 +67,24 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 </p>
             </div>
 
-            {/* UI Control Bar (Filters & Sort) */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-secondary/5 p-3 rounded-xl border border-border/40">
-                {/* Tür Filtreleri */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto scrollbar-hide">
-                    <FilterLink active={!activeType || activeType === 'all'} label="Tümü" value="all" slug={slug} currentSort={activeSort} />
-                    <FilterLink active={activeType === 'person'} label="Kişiler" value="person" slug={slug} currentSort={activeSort} />
-                    <FilterLink active={activeType === 'work'} label="Eserler" value="work" slug={slug} currentSort={activeSort} />
-                    <FilterLink active={activeType === 'concept'} label="Kavramlar" value="concept" slug={slug} currentSort={activeSort} />
-                </div>
-
-                {/* Sıralama */}
-                <div className="flex items-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-border/40 w-full sm:w-auto overflow-x-auto">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground/60 mr-1 whitespace-nowrap">Sırala:</span>
-                    <SortButton active={!activeSort || activeSort === 'activity'} label="Güncel" value="activity" icon={Activity} slug={slug} currentType={activeType} />
-                    <SortButton active={activeSort === 'chronological'} label="Kronolojik" value="chronological" icon={Calendar} slug={slug} currentType={activeType} />
-                </div>
-            </div>
-
             {/* Topics List */}
-            <div className={`space-y-6 relative ${isTimelineView ? 'pl-8' : ''}`}>
-                {/* Timeline Vertical Line */}
-                {isTimelineView && topics && topics.length > 0 && (
-                    <div className="absolute left-3 top-2 bottom-6 w-0.5 bg-gradient-to-b from-primary/60 via-primary/20 to-transparent" />
-                )}
-
+            <div className="space-y-6">
                 {!topics || topics.length === 0 ? (
                     <div className="text-center py-20 border border-dashed border-border/40 rounded-2xl">
-                        <p className="text-muted-foreground">Bu filtreye uygun konu bulunamadı.</p>
-                        <Link href={`/category/${slug}`} className="text-primary text-sm hover:underline mt-2 inline-block">Filtreleri Temizle</Link>
+                        <p className="text-muted-foreground">Bu kategori altında henüz bir konu bulunmuyor.</p>
+                        <Link href={`/yaz`} className="text-primary text-sm hover:underline mt-2 inline-block">İlk konuyu sen aç</Link>
                     </div>
                 ) : (
                     topics.map(topic => {
-                        const config = TYPE_CONFIG[topic.type as keyof typeof TYPE_CONFIG] || TYPE_CONFIG.general
-                        const Icon = config.icon
-
                         return (
                             <Link
                                 key={topic.id}
                                 href={`/topic/${topic.slug}`}
                                 className="group block relative"
                             >
-                                {/* Timeline Dot */}
-                                {isTimelineView && (
-                                    <div className="absolute -left-[25px] top-6 w-3 h-3 rounded-full bg-background border-2 border-primary shadow-[0_0_8px_rgba(234,179,8,0.4)] z-10" />
-                                )}
-
                                 <div className="p-5 rounded-2xl border border-border/50 bg-secondary/5 hover:bg-secondary/10 transition-all hover:border-primary/30 shadow-sm hover:shadow-md">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="space-y-2">
-                                            {/* Era Badge & Type */}
-                                            <div className="flex items-center gap-2">
-                                                {topic.era && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wide border border-primary/20">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {topic.era}
-                                                    </span>
-                                                )}
-                                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${config.color} opacity-80`}>
-                                                    <Icon className="h-3 w-3" />
-                                                    {config.label}
-                                                </span>
-                                            </div>
-
                                             <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors leading-tight">
                                                 {topic.title}
                                             </h2>

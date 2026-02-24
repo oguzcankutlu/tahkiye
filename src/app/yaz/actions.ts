@@ -47,11 +47,11 @@ export async function submitArticle(prevState: any, formData: FormData) {
     const related_videos = formData.get('related_videos') as string || '[]'
     const related_links = formData.get('related_links') as string || '[]'
 
-    // IA Fields
-    const type = formData.get('type') as string || 'general'
-    const era = formData.get('era') as string
-    const era_year_str = formData.get('era_year') as string
-    const era_year = era_year_str ? parseInt(era_year_str) : null
+    // Tag Arrays
+    const generalTagsStr = formData.get('general_tags') as string
+    const dateTagsStr = formData.get('date_tags') as string
+    const generalTags: string[] = generalTagsStr ? JSON.parse(generalTagsStr) : []
+    const dateTags: string[] = dateTagsStr ? JSON.parse(dateTagsStr) : []
 
     // Validation
     if ((!topic_id && !new_topic_title) || !content) {
@@ -80,10 +80,7 @@ export async function submitArticle(prevState: any, formData: FormData) {
                 .insert({
                     title: new_topic_title,
                     slug: slug,
-                    category_ids: category_ids,
-                    type: type,
-                    era: era || null,
-                    era_year: era_year
+                    category_ids: category_ids
                 })
                 .select('id')
                 .single()
@@ -93,6 +90,42 @@ export async function submitArticle(prevState: any, formData: FormData) {
                 return { error: 'Yeni konu oluşturulurken hata: ' + topicError.message }
             }
             topic_id = newTopic.id
+        }
+
+        // --- Etiket İşlemleri ---
+        const allTags = [
+            ...generalTags.map(t => ({ name: t, type: 'general', slug: slugify(t) })),
+            ...dateTags.map(t => ({ name: t, type: 'date', slug: slugify(t) }))
+        ]
+
+        if (allTags.length > 0) {
+            // 1. Veritabanındaki Mevcut Etiketleri Bul
+            const slugs = allTags.map(t => t.slug)
+            const { data: existingDbTags } = await supabase
+                .from('tags')
+                .select('id, slug')
+                .in('slug', slugs)
+
+            const existingSlugs = new Set((existingDbTags || []).map(t => t.slug))
+            const tagsToInsert = allTags.filter(t => !existingSlugs.has(t.slug))
+
+            // 2. Yeni Etiketleri Ekle
+            let allTagIds: string[] = (existingDbTags || []).map(t => t.id)
+            if (tagsToInsert.length > 0) {
+                const { data: newDbTags } = await supabase
+                    .from('tags')
+                    .insert(tagsToInsert)
+                    .select('id')
+                if (newDbTags) {
+                    allTagIds = [...allTagIds, ...newDbTags.map(t => t.id)]
+                }
+            }
+
+            // 3. Konuyu Etiketlerle Eşleştir (topic_tags)
+            if (allTagIds.length > 0) {
+                const topicTagsData = allTagIds.map(tag_id => ({ topic_id, tag_id }))
+                await supabase.from('topic_tags').insert(topicTagsData)
+            }
         }
     }
 

@@ -12,9 +12,9 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function run() {
-    const { data, error } = await supabase.from('categories').select('*').limit(1);
+    const { data, error } = await supabase.from('topics').select('id').limit(1);
     if (data && data.length > 0) {
-        console.log("Columns:", Object.keys(data[0]));
+        console.log("Topic ID Example:", data[0].id, "(Type:", typeof data[0].id, ")");
     }
     console.log(error);
 }

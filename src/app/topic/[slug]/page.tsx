@@ -24,16 +24,28 @@ export default async function TopicPage({
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 1. Fetch the topic by slug
+    // 1. Fetch the topic by slug, including pivot tags
     const { data: topic, error: topicError } = await supabase
         .from("topics")
-        .select('*')
+        .select(`
+            id, title, description, slug, created_at, category_ids,
+            topic_tags( tags( id, name, type, slug ) )
+        `)
         .eq('slug', slug)
         .single()
 
     if (topicError || !topic) {
         return notFound()
     }
+
+    // 1b. Fetch Categories for badging
+    const { data: categories } = await supabase.from('categories').select('id, title, slug')
+    const topicCategories = categories?.filter(c => topic.category_ids?.includes(c.id)) || []
+
+    // Parse tags mapping
+    const rawTags = topic.topic_tags?.map((tt: any) => tt.tags).filter(Boolean) || []
+    const generalTags = rawTags.filter((t: any) => t.type === 'general')
+    const dateTags = rawTags.filter((t: any) => t.type === 'date')
 
     // 2. Fetch all articles related to this topic
     const { data: rawArticles } = await supabase
@@ -68,7 +80,32 @@ export default async function TopicPage({
                         {topic.description}
                     </p>
                 )}
-                <div className="mt-4">
+
+                {/* Badge Container */}
+                <div className="mt-4 flex flex-wrap gap-2 items-center">
+                    {/* Categories */}
+                    {topicCategories.map(c => (
+                        <Link key={c.id} href={`/category/${c.slug}`} className="px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors uppercase font-bold text-[10px] tracking-wider rounded-md">
+                            {c.title}
+                        </Link>
+                    ))}
+
+                    {/* Date Tags */}
+                    {dateTags.map((dt: any) => (
+                        <Link key={dt.id} href={`/arama?tag=${dt.slug}`} className="px-2.5 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 transition-colors font-semibold text-xs rounded-md">
+                            ⏳ {dt.name}
+                        </Link>
+                    ))}
+
+                    {/* General Tags */}
+                    {generalTags.map((gt: any) => (
+                        <Link key={gt.id} href={`/arama?tag=${gt.slug}`} className="px-2.5 py-1 bg-secondary/60 text-secondary-foreground hover:bg-secondary transition-colors font-medium text-xs rounded-md before:content-['#'] before:text-muted-foreground/50 before:mr-0.5">
+                            {gt.name}
+                        </Link>
+                    ))}
+                </div>
+
+                <div className="mt-6">
                     <Link
                         href={`/yaz?topic_id=${topic.id}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
