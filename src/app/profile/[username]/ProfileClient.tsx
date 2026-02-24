@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Share2, Pencil, MessageCircle, Facebook, Send, Copy } from "lucide-react"
 import Link from "next/link"
 import { voteArticle } from "@/app/actions/entry-actions"
+import { ViewTracker } from "@/components/ViewTracker"
 
 interface ArticleWithTopic {
     id: string
@@ -127,100 +128,102 @@ export default function ProfileClient({
                         const shareLink = getShareLink(article.id)
 
                         return (
-                            <article key={article.id} className="space-y-4 pb-10 border-b border-border/20 last:border-0 relative">
-                                <Link href={`/article/${article.id}`} className="group block">
-                                    <h3 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-                                        {article.title}
-                                    </h3>
-                                </Link>
-
-                                <div className="flex items-center gap-3 py-1">
-                                    <Link href={`/konu/${topicSlug}`} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary hover:text-primary-foreground transition-colors">
-                                        {topicTitle}
+                            <ViewTracker key={article.id} articleId={article.id}>
+                                <article className="space-y-4 pb-10 border-b border-border/20 last:border-0 relative">
+                                    <Link href={`/article/${article.id}`} className="group block">
+                                        <h3 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                                            {article.title}
+                                        </h3>
                                     </Link>
-                                    <span className="text-muted-foreground/50">•</span>
-                                    <span className="text-xs text-muted-foreground font-medium">
-                                        {article.read_time} dk okuma
-                                    </span>
-                                </div>
 
-                                <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-base">
-                                    <p>{contentSnippet}</p>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-2 border-t border-border/10">
-                                    <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground">
-                                        <button
-                                            onClick={() => handleVote(article.id, 'up')}
-                                            disabled={isVoting}
-                                            className="flex items-center gap-2 hover:text-primary transition-colors group"
-                                        >
-                                            <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👏</span>
-                                            <span className="tabular-nums">{article.upvotes || 0}</span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleVote(article.id, 'down')}
-                                            disabled={isVoting}
-                                            className="flex items-center gap-2 hover:text-destructive transition-colors group"
-                                        >
-                                            <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
-                                            <span className="tabular-nums">{article.downvotes || 0}</span>
-                                        </button>
-                                        <div className="flex items-center gap-1.5 border-l border-border/50 pl-4 text-muted-foreground/80 hover:text-muted-foreground transition-colors ml-2">
-                                            <span className="text-lg">👁️</span>
-                                            <span className="tabular-nums">{article.views || 0}</span>
-                                        </div>
-                                        <span className="text-[10px] text-muted-foreground/60 uppercase font-medium ml-2 border-l border-border/50 pl-4 h-4 flex items-center">
-                                            {formattedDate}
+                                    <div className="flex items-center gap-3 py-1">
+                                        <Link href={`/konu/${topicSlug}`} className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary hover:text-primary-foreground transition-colors">
+                                            {topicTitle}
+                                        </Link>
+                                        <span className="text-muted-foreground/50">•</span>
+                                        <span className="text-xs text-muted-foreground font-medium">
+                                            {article.read_time} dk okuma
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
-                                        {/* Share Popover */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setShowShareId(showShareId === article.id ? null : article.id)}
-                                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold border border-border/50 rounded-lg hover:bg-secondary/50 hover:text-primary transition-all"
-                                            >
-                                                <Share2 className="h-4 w-4" />
-                                                Paylaş
-                                            </button>
+                                    <div className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-base">
+                                        <p>{contentSnippet}</p>
+                                    </div>
 
-                                            {showShareId === article.id && (
-                                                <>
-                                                    <div className="fixed inset-0 z-40" onClick={() => setShowShareId(null)} />
-                                                    <div className="absolute bottom-full right-0 mb-3 w-48 bg-card border border-border/80 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2">
-                                                        <div className="grid grid-cols-1 gap-1">
-                                                            <a href={`https://wa.me/?text=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
-                                                                <MessageCircle className="h-4 w-4 text-green-500" /> WhatsApp
-                                                            </a>
-                                                            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
-                                                                <Facebook className="h-4 w-4 text-blue-600" /> Facebook
-                                                            </a>
-                                                            <a href={`https://t.me/share/url?url=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
-                                                                <Send className="h-4 w-4 text-sky-500" /> Telegram
-                                                            </a>
-                                                            <button onClick={() => copyToClipboard(article.id)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors border-t border-border/40 mt-1">
-                                                                <Copy className="h-4 w-4 text-muted-foreground" /> Linki Kopyala
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
+                                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-2 border-t border-border/10">
+                                        <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground">
+                                            <button
+                                                onClick={() => handleVote(article.id, 'up')}
+                                                disabled={isVoting}
+                                                className="flex items-center gap-2 hover:text-primary transition-colors group"
+                                            >
+                                                <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👏</span>
+                                                <span className="tabular-nums">{article.upvotes || 0}</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleVote(article.id, 'down')}
+                                                disabled={isVoting}
+                                                className="flex items-center gap-2 hover:text-destructive transition-colors group"
+                                            >
+                                                <span className="text-xl group-hover:scale-125 transition-transform grayscale group-hover:grayscale-0">👎</span>
+                                                <span className="tabular-nums">{article.downvotes || 0}</span>
+                                            </button>
+                                            <div className="flex items-center gap-1.5 border-l border-border/50 pl-4 text-muted-foreground/80 hover:text-muted-foreground transition-colors ml-2">
+                                                <span className="text-lg">👁️</span>
+                                                <span className="tabular-nums">{article.views || 0}</span>
+                                            </div>
+                                            <span className="text-[10px] text-muted-foreground/60 uppercase font-medium ml-2 border-l border-border/50 pl-4 h-4 flex items-center">
+                                                {formattedDate}
+                                            </span>
                                         </div>
 
-                                        {currentUserId === profile.id && (
-                                            <Link
-                                                href={`/yaz?edit_id=${article.id}`}
-                                                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold border border-primary/30 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all font-bold"
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                                Düzenle
-                                            </Link>
-                                        )}
+                                        <div className="flex items-center gap-3">
+                                            {/* Share Popover */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setShowShareId(showShareId === article.id ? null : article.id)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold border border-border/50 rounded-lg hover:bg-secondary/50 hover:text-primary transition-all"
+                                                >
+                                                    <Share2 className="h-4 w-4" />
+                                                    Paylaş
+                                                </button>
+
+                                                {showShareId === article.id && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-40" onClick={() => setShowShareId(null)} />
+                                                        <div className="absolute bottom-full right-0 mb-3 w-48 bg-card border border-border/80 rounded-xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2">
+                                                            <div className="grid grid-cols-1 gap-1">
+                                                                <a href={`https://wa.me/?text=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                                    <MessageCircle className="h-4 w-4 text-green-500" /> WhatsApp
+                                                                </a>
+                                                                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                                    <Facebook className="h-4 w-4 text-blue-600" /> Facebook
+                                                                </a>
+                                                                <a href={`https://t.me/share/url?url=${encodeURIComponent(shareLink)}`} target="_blank" className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors">
+                                                                    <Send className="h-4 w-4 text-sky-500" /> Telegram
+                                                                </a>
+                                                                <button onClick={() => copyToClipboard(article.id)} className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary text-xs font-medium transition-colors border-t border-border/40 mt-1">
+                                                                    <Copy className="h-4 w-4 text-muted-foreground" /> Linki Kopyala
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {currentUserId === profile.id && (
+                                                <Link
+                                                    href={`/yaz?edit_id=${article.id}`}
+                                                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold border border-primary/30 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all font-bold"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                    Düzenle
+                                                </Link>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </article>
+                                </article>
+                            </ViewTracker>
                         )
                     })
                 )}
