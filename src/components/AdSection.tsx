@@ -56,11 +56,13 @@ export function AdSection({ position, className = "" }: { position: string; clas
                 className="block w-full overflow-hidden rounded-lg border border-border/40 hover:border-primary/30 transition-all opacity-90 hover:opacity-100 shadow-sm"
             >
                 {ad.image_url ? (
-                    <img
-                        src={ad.image_url}
-                        alt={ad.title}
-                        className="w-full h-auto object-cover max-h-[120px]"
-                    />
+                    <div className="w-full bg-secondary/5 flex items-center justify-center">
+                        <img
+                            src={ad.image_url}
+                            alt={ad.title}
+                            className="w-full h-auto max-h-[250px] object-contain"
+                        />
+                    </div>
                 ) : (
                     <div className="w-full h-16 bg-secondary/30 flex items-center justify-center text-xs text-muted-foreground font-medium italic">
                         {ad.title}
