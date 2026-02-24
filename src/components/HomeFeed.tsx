@@ -73,9 +73,9 @@ export function HomeFeed({
         <div className="w-full pb-20 space-y-12 mt-6">
             <div className="border-b border-border/40 pb-4">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    En Çok Beğenilenler
+                    Popüler Girdiler
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">Platformdaki en dikkat çekici paylaşımlar.</p>
+                <p className="text-sm text-muted-foreground mt-1">Tahkiye'nin en çok görüntülenen, oylanan ve paylaşılan girdileri</p>
             </div>
 
             <div className="space-y-16">
