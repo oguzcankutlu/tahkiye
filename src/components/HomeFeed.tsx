@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { Share2, MessageCircle, Facebook, Send, Copy, Pencil } from "lucide-react"
@@ -74,10 +74,7 @@ export function HomeFeed({
     return (
         <div className="w-full pb-20 space-y-12 mt-6">
             <div className="border-b border-border/40 pb-4">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    Popüler Girdiler
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">Tahkiye'nin en çok görüntülenen, oylanan ve paylaşılan girdileri</p>
+                <p className="text-sm font-semibold text-foreground mt-1">Tahkiye'nin en çok görüntülenen, oylanan ve paylaşılan girdileri.</p>
             </div>
 
             <div className="space-y-16">
