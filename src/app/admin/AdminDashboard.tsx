@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Users, FileText, Video, Tag, PlusCircle, Trash2, LogOut, LayoutGrid } from "lucide-react"
 import {
-    createTopic, deleteTopic,
+    createTopic, deleteTopic, updateTopic,
     createCategory, deleteCategory,
     createVideo, deleteVideo,
-    deleteArticle, deleteProfile,
+    deleteArticle, deleteUserForce, toggleAdminStatus,
     createAd, deleteAd, toggleAd
 } from "./actions"
 
@@ -19,7 +19,7 @@ interface Category { id: string; title: string; slug: string; created_at: string
 interface Topic { id: string; title: string; slug: string; category_ids?: string[]; created_at: string }
 interface Video { id: string; title: string; video_url: string; duration?: string | null; created_at: string }
 interface Article { id: string; title: string; created_at: string; author_id: string; topic_id: string }
-interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string }
+interface Profile { id: string; username: string; full_name: string | null; avatar_url: string | null; created_at: string; is_admin: boolean }
 interface Ad { id: string; title: string; image_url?: string | null; link_url?: string | null; position: string; is_active: boolean; created_at: string }
 
 interface Props {
@@ -112,6 +112,32 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
         startTransition(async () => { await toggleAd(fd) })
     }
 
+    function handleToggleAdmin(id: string, is_admin: boolean) {
+        if (!confirm(`Bu kullanıcının yetki durumunu değiştirmek istediğinize emin misiniz?`)) return
+        const fd = new FormData(); fd.set('id', id); fd.set('is_admin', String(is_admin))
+        startTransition(async () => { await toggleAdminStatus(fd) })
+    }
+
+    const [editingTopicId, setEditingTopicId] = useState<string | null>(null)
+    const [editTopicCats, setEditTopicCats] = useState<string[]>([])
+    const [editTopicPending, startEditTopicTransition] = useTransition()
+
+    function handleEditTopicSubmit(e: React.FormEvent<HTMLFormElement>, topic: Topic) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        formData.append('id', topic.id)
+        formData.append('category_ids', JSON.stringify(editTopicCats))
+
+        startEditTopicTransition(async () => {
+            const result = await updateTopic(formData)
+            if (result?.error) {
+                alert("Güncelleme hatası: " + result.error)
+            } else {
+                setEditingTopicId(null)
+            }
+        })
+    }
+
     const tabs: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
         { key: 'users', label: 'Üyeler', icon: <Users className="h-4 w-4" />, count: profiles.length },
         { key: 'categories', label: 'Kategoriler', icon: <LayoutGrid className="h-4 w-4" />, count: categories.length },
@@ -174,14 +200,29 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                                     {profiles.map(p => (
                                         <tr key={p.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10">
                                             <td className="px-4 py-3">
-                                                <div className="font-medium text-foreground">@{p.username}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="font-medium text-foreground">@{p.username}</div>
+                                                    {p.is_admin && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30 uppercase">Yönetici</span>}
+                                                </div>
                                                 <div className="text-xs text-muted-foreground">{p.full_name}</div>
                                             </td>
                                             <td className="px-4 py-3 text-muted-foreground">{formatDate(p.created_at)}</td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteProfile, p.id, `Profil silinsin mi? @${p.username}`)} className="p-1.5 rounded hover:bg-destructive/10 text-destructive">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleToggleAdmin(p.id, !p.is_admin)}
+                                                        className={`px-2 py-1 text-xs font-medium rounded border ${p.is_admin ? 'border-primary/50 text-primary hover:bg-primary/10' : 'border-muted-foreground/30 text-muted-foreground hover:bg-secondary/40'}`}
+                                                    >
+                                                        {p.is_admin ? "Yetkiyi Al" : "Admin Yap"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(deleteUserForce, p.id, `DİKKAT: Bu üyeyi KALICI OLARAK silmek üzeresiniz. Bütün girdileri gizlenecek. Emin misiniz? @${p.username}`)}
+                                                        className="p-1.5 rounded hover:bg-destructive/10 text-destructive border border-destructive/20 hover:border-destructive transition-colors"
+                                                        title="Üyeyi Kalıcı Olarak Sistemden Sil"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -272,19 +313,85 @@ export default function AdminDashboardClient({ categories, topics, videos, artic
                                     <tr><th className="px-4 py-3">Konu</th><th className="px-4 py-3">Kategori</th><th className="px-4 py-3 text-right">İşlem</th></tr>
                                 </thead>
                                 <tbody>
-                                    {topics.map(t => (
-                                        <tr key={t.id} className="border-b border-border/20 hover:bg-secondary/10">
-                                            <td className="px-4 py-3 font-medium">{t.title}</td>
-                                            <td className="px-4 py-3 text-muted-foreground text-xs">
-                                                {t.category_ids?.map(id => categories.find(c => c.id === id)?.title).filter(Boolean).join(', ') || '—'}
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleDelete(deleteTopic, t.id, `Konu silinsin mi? ${t.title}`)} className="p-1.5 text-destructive hover:bg-destructive/10">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {topics.map(t => {
+                                        const isEditing = editingTopicId === t.id
+
+                                        if (isEditing) {
+                                            return (
+                                                <tr key={t.id} className="border-b border-border/20 bg-secondary/10">
+                                                    <td colSpan={3} className="px-4 py-4">
+                                                        <form onSubmit={(e) => handleEditTopicSubmit(e, t)} className="space-y-4">
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <label className="text-xs font-semibold text-muted-foreground mb-1 block">Başlık</label>
+                                                                    <Input name="title" required defaultValue={t.title} />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-xs font-semibold text-muted-foreground mb-1 block">Erişim Adresi (Slug)</label>
+                                                                    <Input name="slug" required defaultValue={t.slug} />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Açıklama</label>
+                                                                <Input name="description" defaultValue={(t as any).description || ''} placeholder="Konu hakkında kısa açıklama..." />
+                                                            </div>
+                                                            <div className="flex flex-col gap-2">
+                                                                <label className="text-xs font-semibold text-muted-foreground">Kategoriler</label>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {categories.map(c => {
+                                                                        const isSelected = editTopicCats.includes(c.id)
+                                                                        return (
+                                                                            <button
+                                                                                key={c.id} type="button"
+                                                                                onClick={() => setEditTopicCats(prev => prev.includes(c.id) ? prev.filter(x => x !== c.id) : [...prev, c.id])}
+                                                                                className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-colors ${isSelected ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
+                                                                            >
+                                                                                {c.title}
+                                                                            </button>
+                                                                        )
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex justify-end gap-2 mt-4">
+                                                                <Button type="button" variant="outline" size="sm" onClick={() => setEditingTopicId(null)}>İptal</Button>
+                                                                <Button type="submit" size="sm" disabled={editTopicPending}>{editTopicPending ? "Kaydediliyor..." : "Kaydet"}</Button>
+                                                            </div>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        }
+
+                                        return (
+                                            <tr key={t.id} className="border-b border-border/20 hover:bg-secondary/10">
+                                                <td className="px-4 py-3 font-medium">{t.title}</td>
+                                                <td className="px-4 py-3 text-muted-foreground text-xs">
+                                                    {t.category_ids?.map(id => categories.find(c => c.id === id)?.title).filter(Boolean).join(', ') || '—'}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingTopicId(t.id)
+                                                                setEditTopicCats(t.category_ids || [])
+                                                            }}
+                                                            className="px-3 py-1 text-xs font-semibold rounded border border-border/40 hover:bg-secondary transition-colors"
+                                                            title="Düzenle"
+                                                        >
+                                                            Düzenle
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(deleteTopic, t.id, `Konu silinsin mi? ${t.title}`)}
+                                                            className="p-1.5 text-destructive hover:bg-destructive/10 rounded transition-colors"
+                                                            title="Sil"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>

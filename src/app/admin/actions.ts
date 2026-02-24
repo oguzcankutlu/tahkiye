@@ -29,6 +29,35 @@ export async function createTopic(formData: FormData) {
     return { success: true }
 }
 
+export async function updateTopic(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const id = formData.get('id') as string
+    const title = formData.get('title') as string
+    const slug = formData.get('slug') as string
+    const category_ids_str = formData.get('category_ids') as string
+    const category_ids = category_ids_str ? JSON.parse(category_ids_str) : []
+    const description = formData.get('description') as string
+
+    if (!id || !title || !slug) return { error: 'ID, Başlık ve Slug zorunludur.' }
+
+    const { error } = await supabase.from('topics').update({
+        title,
+        slug,
+        category_ids,
+        description
+    }).eq('id', id)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    revalidatePath(`/topic/${slug}`)
+    revalidatePath('/')
+    return { success: true }
+}
+
 export async function createCategory(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -123,14 +152,30 @@ export async function deleteArticle(formData: FormData) {
     return { success: true }
 }
 
-export async function deleteProfile(formData: FormData) {
+export async function toggleAdminStatus(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Yetkisiz erişim.' }
 
     const id = formData.get('id') as string
-    // Sadece profili siliyoruz — Supabase auth kullanıcısı ayrı silmek gerekir
-    const { error } = await supabase.from('profiles').delete().eq('id', id)
+    const targetStatus = formData.get('is_admin') === 'true'
+
+    const { error } = await supabase.from('profiles').update({ is_admin: targetStatus }).eq('id', id)
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    return { success: true }
+}
+
+export async function deleteUserForce(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Yetkisiz erişim.' }
+
+    const id = formData.get('id') as string
+
+    // Use Postgres RPC to force delete from auth.users (cascades to profiles)
+    const { error } = await supabase.rpc('admin_delete_user', { target_user_id: id })
     if (error) return { error: error.message }
 
     revalidatePath('/admin')
