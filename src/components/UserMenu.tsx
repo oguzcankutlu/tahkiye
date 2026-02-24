@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { User, Settings, LogOut, ChevronDown, ShieldCheck } from "lucide-react"
 import { createClient } from "@/utils/supabase/client"
+import { ThemeToggle } from "./ThemeToggle"
 
 interface Profile {
     username: string
@@ -122,6 +123,12 @@ export function UserMenu() {
                             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                             Yönetici Paneli
                         </Link>
+                    </div>
+                    <div className="p-1 border-t border-border/60">
+                        <div className="px-3 py-2 flex items-center justify-between text-sm text-foreground">
+                            <span>Tema</span>
+                            <ThemeToggle />
+                        </div>
                     </div>
                     <div className="p-1 border-t border-border/60">
                         <button

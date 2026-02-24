@@ -58,12 +58,12 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
                         <Link
                             href="/videolar"
-                            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-md transition-colors items-center justify-center min-w-[44px] min-h-[44px]"
+                            className="flex flex-col sm:flex-row p-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-md transition-colors items-center justify-center min-w-[44px] min-h-[44px]"
                             aria-label="Videolar"
                         >
                             <PlaySquare className="h-5 w-5" />
                         </Link>
-                        <ThemeToggle />
+
 
                         <div className="h-6 w-px bg-border/50 mx-1 hidden sm:block" />
 
